@@ -319,10 +319,10 @@ export function OrderPanel({
               <button
                 onClick={() => handleCall(firstOrder.customerPhone)}
                 className="w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: "#E8F5E9" }}
+                style={{ backgroundColor: "#000000" }}
                 data-testid="button-call-restaurant"
               >
-                <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
+                <Phone className="w-5 h-5" style={{ color: "#FFFFFF" }} />
               </button>
             </div>
           </div>
