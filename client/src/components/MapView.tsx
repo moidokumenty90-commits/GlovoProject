@@ -91,9 +91,9 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
           align-items: center;
         ">
           <div style="
-            width: 36px;
-            height: 36px;
-            background: #22C55E;
+            width: 44px;
+            height: 44px;
+            background: #374151;
             border: 3px solid white;
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -101,14 +101,26 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
             align-items: center;
             justify-content: center;
           ">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
-              <path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
             </svg>
           </div>
+          <div style="
+            width: 18px;
+            height: 18px;
+            background: #00A082;
+            border: 2px solid white;
+            border-radius: 50%;
+            margin-top: -9px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          "></div>
         </div>
       `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 36],
+      iconSize: [44, 62],
+      iconAnchor: [22, 62],
     });
   };
 
@@ -122,9 +134,9 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
           align-items: center;
         ">
           <div style="
-            width: 36px;
-            height: 36px;
-            background: #1F2937;
+            width: 44px;
+            height: 44px;
+            background: #00A082;
             border: 3px solid white;
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -132,22 +144,39 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
             align-items: center;
             justify-content: center;
           ">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
           </div>
+          <div style="
+            width: 18px;
+            height: 18px;
+            background: #1F2937;
+            border: 2px solid white;
+            border-radius: 50%;
+            margin-top: -9px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </div>
         </div>
       `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 36],
+      iconSize: [44, 62],
+      iconAnchor: [22, 62],
     });
   };
 
   const createDraggableIcon = (type: "restaurant" | "customer") => {
-    const color = type === "restaurant" ? "#22C55E" : "#1F2937";
+    const mainColor = type === "restaurant" ? "#374151" : "#00A082";
+    const dotColor = type === "restaurant" ? "#00A082" : "#1F2937";
     const icon = type === "restaurant" 
-      ? `<path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/>`
+      ? `<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>`
       : `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`;
     
     return L.divIcon({
@@ -160,9 +189,9 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
           filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
         ">
           <div style="
-            width: 48px;
-            height: 48px;
-            background: ${color};
+            width: 52px;
+            height: 52px;
+            background: ${mainColor};
             border: 4px solid white;
             border-radius: 50%;
             display: flex;
@@ -170,28 +199,27 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
             justify-content: center;
             animation: bounce 0.5s ease-in-out infinite alternate;
           ">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
               ${icon}
             </svg>
           </div>
           <div style="
-            width: 4px;
-            height: 20px;
-            background: ${color};
-            margin-top: -4px;
-          "></div>
-          <div style="
-            width: 12px;
-            height: 12px;
-            background: ${color};
+            width: 22px;
+            height: 22px;
+            background: ${dotColor};
+            border: 3px solid white;
             border-radius: 50%;
-            margin-top: -2px;
-            opacity: 0.5;
-          "></div>
+            margin-top: -11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            ${type === "customer" ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>` : ""}
+          </div>
         </div>
       `,
-      iconSize: [48, 80],
-      iconAnchor: [24, 80],
+      iconSize: [52, 74],
+      iconAnchor: [26, 74],
     });
   };
 
@@ -200,23 +228,41 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
       className: "saved-restaurant-marker",
       html: `
         <div style="
-          width: 28px;
-          height: 28px;
-          background: #16A34A;
-          border: 2px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: center;
         ">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
-            <path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/>
-          </svg>
+          <div style="
+            width: 40px;
+            height: 40px;
+            background: #374151;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </div>
+          <div style="
+            width: 16px;
+            height: 16px;
+            background: #00A082;
+            border: 2px solid white;
+            border-radius: 50%;
+            margin-top: -8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          "></div>
         </div>
       `,
-      iconSize: [28, 28],
-      iconAnchor: [14, 28],
+      iconSize: [40, 56],
+      iconAnchor: [20, 56],
     });
   };
 
@@ -225,24 +271,46 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
       className: "saved-customer-marker",
       html: `
         <div style="
-          width: 28px;
-          height: 28px;
-          background: #4B5563;
-          border: 2px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: center;
         ">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
+          <div style="
+            width: 40px;
+            height: 40px;
+            background: #00A082;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div style="
+            width: 16px;
+            height: 16px;
+            background: #1F2937;
+            border: 2px solid white;
+            border-radius: 50%;
+            margin-top: -8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </div>
         </div>
       `,
-      iconSize: [28, 28],
-      iconAnchor: [14, 28],
+      iconSize: [40, 56],
+      iconAnchor: [20, 56],
     });
   };
 
