@@ -337,7 +337,7 @@ export function OrderPanel({
             style={{ 
               height: "1px",
               backgroundColor: "#9CA3AF",
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.29)"
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.39)"
             }}
           />
 
