@@ -24,6 +24,17 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// User active sessions - tracks which session is active for each user (single-device enforcement)
+export const userSessions = pgTable("user_sessions", {
+  userId: varchar("user_id").primaryKey(), // Only one active session per user
+  sessionId: varchar("session_id").notNull(),
+  deviceInfo: text("device_info"), // User agent / device info
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type UserSession = typeof userSessions.$inferSelect;
+
 // User storage table for Replit Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

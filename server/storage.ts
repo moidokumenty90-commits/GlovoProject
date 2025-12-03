@@ -4,6 +4,8 @@ import {
   orders,
   markers,
   messages,
+  userSessions,
+  sessions,
   type User,
   type UpsertUser,
   type Courier,
@@ -14,6 +16,7 @@ import {
   type InsertMarker,
   type Message,
   type InsertMessage,
+  type UserSession,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -43,6 +46,12 @@ export interface IStorage {
   getMarkersByType(courierId: string, type: string): Promise<Marker[]>;
   createMarker(marker: InsertMarker): Promise<Marker>;
   deleteMarker(id: string): Promise<boolean>;
+  
+  // Session management (single-device enforcement)
+  getUserSession(userId: string): Promise<UserSession | undefined>;
+  setUserSession(userId: string, sessionId: string, deviceInfo?: string, ipAddress?: string): Promise<void>;
+  deleteUserSession(userId: string): Promise<void>;
+  deleteSessionById(sessionId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -346,6 +355,44 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return result.length;
+  }
+
+  // Session management (single-device enforcement)
+  async getUserSession(userId: string): Promise<UserSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(userSessions)
+      .where(eq(userSessions.userId, userId));
+    return session;
+  }
+
+  async setUserSession(userId: string, sessionId: string, deviceInfo?: string, ipAddress?: string): Promise<void> {
+    await db
+      .insert(userSessions)
+      .values({
+        userId,
+        sessionId,
+        deviceInfo,
+        ipAddress,
+        createdAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: userSessions.userId,
+        set: {
+          sessionId,
+          deviceInfo,
+          ipAddress,
+          createdAt: new Date(),
+        },
+      });
+  }
+
+  async deleteUserSession(userId: string): Promise<void> {
+    await db.delete(userSessions).where(eq(userSessions.userId, userId));
+  }
+
+  async deleteSessionById(sessionId: string): Promise<void> {
+    await db.delete(sessions).where(eq(sessions.sid, sessionId));
   }
 }
 
