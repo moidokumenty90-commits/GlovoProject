@@ -335,9 +335,9 @@ export function OrderPanel({
           <div 
             className="w-full mb-4"
             style={{ 
-              height: "1px",
-              backgroundColor: "#E5E7EB",
-              boxShadow: "0 3px 6px rgba(0, 0, 0, 0.08)"
+              height: "2px",
+              backgroundColor: "#9CA3AF",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.25)"
             }}
           />
 
