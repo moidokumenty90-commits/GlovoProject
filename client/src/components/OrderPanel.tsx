@@ -450,14 +450,14 @@ export function OrderPanel({
 
     return (
       <>
-        <div className="overflow-y-auto flex-1 overscroll-contain">
+        <div className="overflow-y-auto flex-1 overscroll-contain text-lg">
           <div className="px-4 pb-4">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900" data-testid="text-customer-name">
+                <h2 className="text-2xl font-bold text-gray-900" data-testid="text-customer-name">
                   {order.customerName}
                 </h2>
-                <p className="text-gray-500 text-sm" data-testid="text-customer-address">
+                <p className="text-gray-500 text-base" data-testid="text-customer-address">
                   {formatAddress()}
                 </p>
               </div>
@@ -494,7 +494,7 @@ export function OrderPanel({
           />
 
           {order.buildingInfo && (
-            <p className="px-4 text-gray-500 text-sm mb-3">
+            <p className="px-4 text-gray-500 text-base mb-3">
               Здание: {order.buildingInfo}
             </p>
           )}
@@ -503,15 +503,15 @@ export function OrderPanel({
           <div className="w-full mb-2" style={{ height: "0.5px", backgroundColor: "#D1D5DB" }} />
 
           <div className="px-4 py-4">
-            <div className="text-3xl font-bold text-gray-900 mb-1 tracking-tight" data-testid="text-order-number">
+            <div className="text-4xl font-bold text-gray-900 mb-1 tracking-tight" data-testid="text-order-number">
               {order.orderNumber}
             </div>
             
-            <p className="text-sm mb-0.5 font-bold" style={{ color: "#000000" }}>
+            <p className="text-base mb-0.5 font-bold" style={{ color: "#000000" }}>
               #{getShortOrderNum(order)} · {order.customerName}
             </p>
             
-            <p className="font-semibold text-gray-900 text-base mb-4" data-testid="text-restaurant-name-delivery">
+            <p className="font-semibold text-gray-900 text-lg mb-4" data-testid="text-restaurant-name-delivery">
               {order.restaurantName}
             </p>
 
@@ -521,12 +521,12 @@ export function OrderPanel({
                 className="flex items-center gap-1 mb-2"
                 data-testid="button-toggle-items"
               >
-                <span className="font-medium" style={{ color: "#00A082" }}>
+                <span className="font-medium text-lg" style={{ color: "#00A082" }}>
                   {totalItems} прод.
                 </span>
                 <ChevronDown 
                   className={cn(
-                    "w-5 h-5 transition-transform",
+                    "w-6 h-6 transition-transform",
                     showItems && "rotate-180"
                   )}
                   style={{ color: "#00A082" }}
@@ -537,7 +537,7 @@ export function OrderPanel({
             {showItems && items.length > 0 && (
               <div className="space-y-2 mb-4 pl-8">
                 {items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-start text-sm">
+                  <div key={index} className="flex justify-between items-start text-base">
                     <div className="flex gap-2">
                       <span className="text-gray-500">{item.quantity || 1}x</span>
                       <span className="text-gray-700">{item.name}</span>
@@ -553,8 +553,8 @@ export function OrderPanel({
           <div className="h-px w-full" style={{ backgroundColor: "#9CA3AF" }} />
 
           <div className="px-4 py-4">
-            <p className="text-gray-400 text-sm mb-1">Оплата</p>
-            <p className="text-gray-900">
+            <p className="text-gray-400 text-base mb-1">Оплата</p>
+            <p className="text-gray-900 text-lg">
               {order.paymentMethod === "card" ? "Оплачено онлайн" : "Готівка при отриманні"}
             </p>
           </div>
@@ -566,8 +566,8 @@ export function OrderPanel({
             className="w-full px-4 py-4 flex items-center justify-between"
             data-testid="button-client-unavailable"
           >
-            <span className="font-bold" style={{ color: "#000000" }}>Клиент недоступен</span>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+            <span className="font-bold text-lg" style={{ color: "#000000" }}>Клиент недоступен</span>
+            <ChevronRight className="w-6 h-6 text-gray-400" />
           </button>
 
           {/* Gray line below client unavailable button */}
@@ -577,7 +577,7 @@ export function OrderPanel({
         <div className="flex-shrink-0 px-4 pb-4 bg-white">
           <button
             onClick={() => onConfirmDelivery?.(order.id)}
-            className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
+            className="w-full py-4 rounded-full text-lg font-semibold text-white bg-black"
             data-testid="button-confirm-delivery"
           >
             Подтвердить доставку
