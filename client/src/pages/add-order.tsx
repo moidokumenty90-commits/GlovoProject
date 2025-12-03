@@ -96,8 +96,17 @@ export default function AddOrder() {
 
   const createOrderMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      // Use default coordinates (Dnipro city center area)
+      const defaultCoords = {
+        restaurantLat: 48.4647 + (Math.random() - 0.5) * 0.02,
+        restaurantLng: 35.0462 + (Math.random() - 0.5) * 0.02,
+        customerLat: 48.4647 + (Math.random() - 0.5) * 0.02,
+        customerLng: 35.0462 + (Math.random() - 0.5) * 0.02,
+      };
+      
       return await apiRequest("POST", "/api/orders", {
         ...data,
+        ...defaultCoords,
         items,
         courierId: courier?.id,
       });
