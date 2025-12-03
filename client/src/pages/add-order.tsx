@@ -494,7 +494,8 @@ export default function AddOrder() {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full h-14 rounded-xl text-base font-semibold bg-green-500 hover:bg-green-600"
+            className="w-full h-14 rounded-full text-base font-semibold text-white"
+            style={{ backgroundColor: "#00A082" }}
             disabled={createOrderMutation.isPending}
             data-testid="button-create-order"
           >

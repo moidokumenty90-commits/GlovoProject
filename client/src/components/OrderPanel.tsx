@@ -198,11 +198,12 @@ export function OrderPanel({
           </>
         )}
 
-        {/* Action Buttons - Glovo style */}
+        {/* Action Buttons - Glovo style teal color */}
         <div className="mt-4">
           {order.status === "new" && (
             <Button
-              className="w-full h-14 rounded-full text-base font-semibold bg-green-500 hover:bg-green-600 text-white shadow-lg"
+              className="w-full h-14 rounded-full text-base font-semibold text-white shadow-lg"
+              style={{ backgroundColor: "#00A082" }}
               onClick={onAccept}
               data-testid="button-accept-order"
             >
@@ -212,7 +213,8 @@ export function OrderPanel({
 
           {order.status === "accepted" && (
             <Button
-              className="w-full h-14 rounded-full text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+              className="w-full h-14 rounded-full text-base font-semibold text-white shadow-lg"
+              style={{ backgroundColor: "#00A082" }}
               onClick={() => onStatusChange?.("in_transit")}
               data-testid="button-start-delivery"
             >
@@ -223,7 +225,8 @@ export function OrderPanel({
 
           {order.status === "in_transit" && (
             <Button
-              className="w-full h-14 rounded-full text-base font-semibold bg-gray-900 hover:bg-gray-800 text-white shadow-lg"
+              className="w-full h-14 rounded-full text-base font-semibold text-white shadow-lg"
+              style={{ backgroundColor: "#00A082" }}
               onClick={onConfirmDelivery}
               data-testid="button-confirm-delivery"
             >
