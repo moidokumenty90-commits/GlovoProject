@@ -316,6 +316,16 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
         }
         .leaflet-container {
           font-family: inherit;
+          z-index: 1 !important;
+        }
+        .leaflet-pane {
+          z-index: 1 !important;
+        }
+        .leaflet-tile-pane {
+          z-index: 1 !important;
+        }
+        .leaflet-control-container {
+          z-index: 10 !important;
         }
       `}</style>
       <div

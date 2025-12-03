@@ -214,8 +214,8 @@ export default function Home() {
 
   return (
     <div className="h-screen w-full relative overflow-hidden" data-testid="home-screen">
-      {/* Map */}
-      <div className="absolute inset-0">
+      {/* Map - lower z-index */}
+      <div className="absolute inset-0 z-0">
         <MapView
           courierLocation={courierLocation}
           order={order || null}
@@ -224,17 +224,19 @@ export default function Home() {
         />
       </div>
 
-      {/* Top Bar */}
-      <TopBar
-        isOnline={courier?.isOnline || false}
-        onToggleStatus={() => toggleStatusMutation.mutate()}
-        onMenuClick={() => setMenuOpen(true)}
-      />
+      {/* Top Bar - higher z-index */}
+      <div className="relative z-30">
+        <TopBar
+          isOnline={courier?.isOnline || false}
+          onToggleStatus={() => toggleStatusMutation.mutate()}
+          onMenuClick={() => setMenuOpen(true)}
+        />
+      </div>
 
       {/* Navigation Button */}
       {order && order.status !== "delivered" && (
         <div 
-          className="absolute right-4 z-20 transition-all duration-300"
+          className="absolute right-4 z-30 transition-all duration-300"
           style={{ bottom: panelExpanded ? "calc(80vh + 16px)" : "180px" }}
         >
           <NavigationButton
@@ -252,7 +254,7 @@ export default function Home() {
           onClick={() => {
             // Center map on courier location - handled by MapView component
           }}
-          className="absolute right-4 bottom-24 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center z-20"
+          className="absolute right-4 bottom-24 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center z-30"
           data-testid="button-center-location"
         >
           <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white" />
@@ -261,76 +263,85 @@ export default function Home() {
 
       {/* Order Panel */}
       {order && (
-        <OrderPanel
-          order={order}
-          isExpanded={panelExpanded}
-          onToggleExpand={() => setPanelExpanded(!panelExpanded)}
-          onAccept={() => acceptOrderMutation.mutate()}
-          onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
-          onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
-          onOpenChat={() => setChatOpen(true)}
-        />
+        <div className="relative z-30">
+          <OrderPanel
+            order={order}
+            isExpanded={panelExpanded}
+            onToggleExpand={() => setPanelExpanded(!panelExpanded)}
+            onAccept={() => acceptOrderMutation.mutate()}
+            onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
+            onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
+            onOpenChat={() => setChatOpen(true)}
+          />
+        </div>
       )}
 
       {/* Chat Panel */}
       {order && (
-        <ChatPanel
-          orderId={order.id}
-          isOpen={chatOpen}
-          onClose={() => setChatOpen(false)}
-        />
+        <div className="relative z-40">
+          <ChatPanel
+            orderId={order.id}
+            isOpen={chatOpen}
+            onClose={() => setChatOpen(false)}
+          />
+        </div>
       )}
 
       {/* Burger Menu */}
-      <BurgerMenu
-        isOpen={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        onAddRestaurantMarker={() => setAddRestaurantOpen(true)}
-        onRemoveRestaurantMarker={() => setDeleteRestaurantOpen(true)}
-        onAddCustomerMarker={() => setAddCustomerOpen(true)}
-        onRemoveCustomerMarker={() => setDeleteCustomerOpen(true)}
-      />
+      <div className="relative z-50">
+        <BurgerMenu
+          isOpen={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          onAddRestaurantMarker={() => setAddRestaurantOpen(true)}
+          onRemoveRestaurantMarker={() => setDeleteRestaurantOpen(true)}
+          onAddCustomerMarker={() => setAddCustomerOpen(true)}
+          onRemoveCustomerMarker={() => setDeleteCustomerOpen(true)}
+        />
+      </div>
 
-      {/* Delivery Confirmation Dialog */}
-      <DeliveryConfirmDialog
-        open={confirmDeliveryOpen}
-        onOpenChange={setConfirmDeliveryOpen}
-        orderNumber={order?.orderNumber || ""}
-        onConfirm={() => confirmDeliveryMutation.mutate()}
-      />
+      {/* Dialogs - highest z-index */}
+      <div className="relative z-50">
+        {/* Delivery Confirmation Dialog */}
+        <DeliveryConfirmDialog
+          open={confirmDeliveryOpen}
+          onOpenChange={setConfirmDeliveryOpen}
+          orderNumber={order?.orderNumber || ""}
+          onConfirm={() => confirmDeliveryMutation.mutate()}
+        />
 
-      {/* Marker Dialogs */}
-      <MarkerDialog
-        open={addRestaurantOpen}
-        onOpenChange={setAddRestaurantOpen}
-        type="restaurant"
-        lat={mapClickCoords?.lat}
-        lng={mapClickCoords?.lng}
-        onSave={handleSaveMarker("restaurant")}
-      />
+        {/* Marker Dialogs */}
+        <MarkerDialog
+          open={addRestaurantOpen}
+          onOpenChange={setAddRestaurantOpen}
+          type="restaurant"
+          lat={mapClickCoords?.lat}
+          lng={mapClickCoords?.lng}
+          onSave={handleSaveMarker("restaurant")}
+        />
 
-      <MarkerDialog
-        open={addCustomerOpen}
-        onOpenChange={setAddCustomerOpen}
-        type="customer"
-        lat={mapClickCoords?.lat}
-        lng={mapClickCoords?.lng}
-        onSave={handleSaveMarker("customer")}
-      />
+        <MarkerDialog
+          open={addCustomerOpen}
+          onOpenChange={setAddCustomerOpen}
+          type="customer"
+          lat={mapClickCoords?.lat}
+          lng={mapClickCoords?.lng}
+          onSave={handleSaveMarker("customer")}
+        />
 
-      <DeleteMarkerDialog
-        open={deleteRestaurantOpen}
-        onOpenChange={setDeleteRestaurantOpen}
-        markers={restaurantMarkers.map((m) => ({ id: m.id, name: m.name }))}
-        onDelete={(id) => deleteMarkerMutation.mutate(id)}
-      />
+        <DeleteMarkerDialog
+          open={deleteRestaurantOpen}
+          onOpenChange={setDeleteRestaurantOpen}
+          markers={restaurantMarkers.map((m) => ({ id: m.id, name: m.name }))}
+          onDelete={(id) => deleteMarkerMutation.mutate(id)}
+        />
 
-      <DeleteMarkerDialog
-        open={deleteCustomerOpen}
-        onOpenChange={setDeleteCustomerOpen}
-        markers={customerMarkers.map((m) => ({ id: m.id, name: m.name }))}
-        onDelete={(id) => deleteMarkerMutation.mutate(id)}
-      />
+        <DeleteMarkerDialog
+          open={deleteCustomerOpen}
+          onOpenChange={setDeleteCustomerOpen}
+          markers={customerMarkers.map((m) => ({ id: m.id, name: m.name }))}
+          onDelete={(id) => deleteMarkerMutation.mutate(id)}
+        />
+      </div>
     </div>
   );
 }
