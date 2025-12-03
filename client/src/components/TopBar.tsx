@@ -30,12 +30,12 @@ export function TopBar({
         className="flex flex-col items-center"
         data-testid="button-toggle-status"
       >
-        <span className="text-xs text-gray-500 mb-1.5 font-medium">Статус</span>
+        <span className="text-[10px] text-gray-500 mb-1 font-medium tracking-wide">Статус</span>
         <div
-          className={`px-6 py-2.5 rounded-full font-semibold text-sm shadow-lg ${
+          className={`min-w-[80px] px-4 py-2 rounded-full font-semibold text-sm shadow-md text-center ${
             isOnline
               ? "bg-green-500 text-white"
-              : "bg-gray-300 text-gray-600"
+              : "bg-gray-200 text-gray-600"
           }`}
         >
           {isOnline ? "Онлайн" : "Офлайн"}

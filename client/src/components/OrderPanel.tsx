@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Phone, MessageSquare, ChevronUp, ChevronDown, Navigation, Trash2 } from "lucide-react";
+import { Phone, MessageSquare, ChevronUp, ChevronDown, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Order, OrderItem } from "@shared/schema";
@@ -9,7 +9,6 @@ interface OrderPanelProps {
   onAccept?: () => void;
   onConfirmDelivery?: () => void;
   onStatusChange?: (status: string) => void;
-  onDelete?: () => void;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
   onOpenChat?: () => void;
@@ -20,7 +19,6 @@ export function OrderPanel({
   onAccept,
   onConfirmDelivery,
   onStatusChange,
-  onDelete,
   isExpanded = false,
   onToggleExpand,
   onOpenChat,
@@ -77,7 +75,7 @@ export function OrderPanel({
             {order.customerName}
           </h2>
           
-          {/* Call, Chat and Delete Buttons - Glovo style circles */}
+          {/* Call and Chat Buttons - Glovo style circles */}
           <div className="flex items-center gap-2">
             <button
               onClick={handleCall}
@@ -92,13 +90,6 @@ export function OrderPanel({
               data-testid="button-chat"
             >
               <MessageSquare className="w-5 h-5 text-gray-600" />
-            </button>
-            <button
-              onClick={onDelete}
-              className="w-11 h-11 rounded-full border-2 border-red-200 flex items-center justify-center hover:bg-red-50 transition-colors"
-              data-testid="button-delete-order"
-            >
-              <Trash2 className="w-5 h-5 text-red-500" />
             </button>
           </div>
         </div>

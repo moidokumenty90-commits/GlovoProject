@@ -348,7 +348,6 @@ export default function Home() {
             onAccept={() => acceptOrderMutation.mutate()}
             onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
             onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
-            onDelete={() => deleteOrderMutation.mutate()}
             onOpenChat={() => setChatOpen(true)}
           />
         </div>

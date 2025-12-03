@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { ArrowLeft, Filter, Calendar, Search, Package, ChevronDown } from "lucide-react";
+import { ArrowLeft, Filter, Search, Package, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,23 +12,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { OrderStatusBadge } from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Order } from "@shared/schema";
 
 export default function History() {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState("all");
   const [customerSearch, setCustomerSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-
-  const queryParams = new URLSearchParams();
-  if (statusFilter && statusFilter !== "all") {
-    queryParams.set("status", statusFilter);
-  }
-  if (customerSearch) {
-    queryParams.set("customerName", customerSearch);
-  }
+  const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
 
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders/history", statusFilter, customerSearch],
@@ -46,6 +52,28 @@ export default function History() {
     },
   });
 
+  const deleteOrderMutation = useMutation({
+    mutationFn: async (orderId: string) => {
+      return await apiRequest("DELETE", `/api/orders/${orderId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
+      toast({
+        title: "Заказ удалён",
+        description: "Заказ успешно удалён из истории",
+      });
+      setDeleteOrderId(null);
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить заказ",
+        variant: "destructive",
+      });
+    },
+  });
+
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString("ru-RU", {
       day: "2-digit",
@@ -56,13 +84,13 @@ export default function History() {
     });
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "new": return t.status.new;
-      case "accepted": return t.status.accepted;
-      case "in_transit": return t.status.inTransit;
-      case "delivered": return t.status.delivered;
-      default: return status;
+  const handleDeleteClick = (orderId: string) => {
+    setDeleteOrderId(orderId);
+  };
+
+  const confirmDelete = () => {
+    if (deleteOrderId) {
+      deleteOrderMutation.mutate(deleteOrderId);
     }
   };
 
@@ -147,10 +175,17 @@ export default function History() {
                         {formatDate(order.createdAt || new Date())}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="flex items-center gap-2">
                       <p className="font-bold text-lg text-primary">
                         {order.totalPrice.toFixed(2)} ₴
                       </p>
+                      <button
+                        onClick={() => handleDeleteClick(order.id)}
+                        className="w-10 h-10 rounded-full border-2 border-red-200 flex items-center justify-center hover:bg-red-50 transition-colors"
+                        data-testid={`button-delete-order-${order.id}`}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
                     </div>
                   </div>
 
@@ -174,6 +209,28 @@ export default function History() {
           </div>
         )}
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteOrderId} onOpenChange={(open) => !open && setDeleteOrderId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить заказ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">Отмена</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-red-500 hover:bg-red-600"
+              data-testid="button-confirm-delete"
+            >
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
