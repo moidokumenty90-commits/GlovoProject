@@ -361,56 +361,69 @@ export function OrderPanel({
             </div>
           )}
 
-          <div className="px-4 space-y-4">
+          <div className="px-4">
             {orders.map((order, index) => (
-              <div key={order.id} className="flex items-start gap-3">
-                <div className="flex flex-col items-center">
-                  <span 
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold"
-                    style={{ backgroundColor: "#00A082", color: "white" }}
-                  >
-                    {index + 1}
-                  </span>
-                  {index < orders.length - 1 && (
-                    <div className="w-0.5 h-16 bg-gray-200 mt-1" />
-                  )}
-                </div>
-
-                <div className="flex-1">
-                  <span
-                    className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-2"
-                    style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
-                  >
-                    {getOrderStatusLabel(order.status)}
-                  </span>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div 
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 mb-1"
-                        style={{ borderColor: "#00A082" }}
-                      >
-                        <span className="text-lg font-bold" style={{ color: "#000000" }}>
-                          #{getShortOrderNum(order)}
-                        </span>
-                        <ExternalLink className="w-3.5 h-3.5" style={{ color: "#00A082" }} />
-                      </div>
-                      <p className="text-xs font-bold" style={{ color: "#000000" }}>
-                        {order.orderNumber} - #{getShortOrderNum(order)} - {order.customerName}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setSelectedOrderId(order.id);
-                        setShowItems(false);
-                      }}
-                      className="w-12 h-12 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: "#00A082" }}
-                      data-testid={`button-open-order-${order.id}`}
+              <div key={order.id}>
+                {/* Separator line between orders */}
+                {index > 0 && (
+                  <div 
+                    className="w-full my-5"
+                    style={{ 
+                      height: "1px",
+                      backgroundColor: "#D1D5DB"
+                    }}
+                  />
+                )}
+                
+                <div className="flex items-start gap-3 py-2">
+                  <div className="flex flex-col items-center">
+                    <span 
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold"
+                      style={{ backgroundColor: "#00A082", color: "white" }}
                     >
-                      <ChevronRight className="w-6 h-6 text-white" />
-                    </button>
+                      {index + 1}
+                    </span>
+                    {index < orders.length - 1 && (
+                      <div className="w-0.5 h-20 mt-1" style={{ backgroundColor: "#000000" }} />
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <span
+                      className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-2"
+                      style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
+                    >
+                      {getOrderStatusLabel(order.status)}
+                    </span>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div 
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 mb-1"
+                          style={{ borderColor: "#00A082" }}
+                        >
+                          <span className="text-lg font-bold" style={{ color: "#000000" }}>
+                            #{getShortOrderNum(order)}
+                          </span>
+                          <ExternalLink className="w-3.5 h-3.5" style={{ color: "#00A082" }} />
+                        </div>
+                        <p className="text-xs font-bold" style={{ color: "#000000" }}>
+                          {order.orderNumber} - #{getShortOrderNum(order)} - {order.customerName}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setSelectedOrderId(order.id);
+                          setShowItems(false);
+                        }}
+                        className="w-12 h-12 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: "#00A082" }}
+                        data-testid={`button-open-order-${order.id}`}
+                      >
+                        <ChevronRight className="w-6 h-6 text-white" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
