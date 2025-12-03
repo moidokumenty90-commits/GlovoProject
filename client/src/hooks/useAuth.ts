@@ -1,11 +1,34 @@
-import { useQuery } from "@tanstack/react-query";
-import type { User } from "@shared/schema";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery<User>({
+  const queryClient = useQueryClient();
+
+  const { data: user, isLoading, error, refetch } = useQuery<AuthUser>({
     queryKey: ["/api/auth/user"],
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/logout", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      window.location.href = "/";
+    },
   });
 
   return {
@@ -13,5 +36,8 @@ export function useAuth() {
     isLoading,
     isAuthenticated: !!user && !error,
     error,
+    logout: logoutMutation.mutate,
+    isLoggingOut: logoutMutation.isPending,
+    refetch,
   };
 }

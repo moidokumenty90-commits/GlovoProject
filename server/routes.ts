@@ -1,10 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupSimpleAuth, isAuthenticated } from "./simpleAuth";
+import { COURIER_INFO } from "./authConfig";
 import { z } from "zod";
 
-// Validation schemas
 const updateCourierSchema = z.object({
   name: z.string().optional(),
   isOnline: z.boolean().optional(),
@@ -55,34 +55,17 @@ const createMarkerSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register routes on app
-  // Auth middleware
-  await setupAuth(app);
+  setupSimpleAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
-  // Courier routes
   app.get("/api/courier", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       let courier = await storage.getCourierByUserId(userId);
       
-      // Create courier if not exists
       if (!courier) {
-        const user = await storage.getUser(userId);
         courier = await storage.createCourier({
           userId,
-          name: user?.firstName || user?.email?.split("@")[0] || "Курьер",
+          name: COURIER_INFO.name,
           isOnline: false,
         });
       }
@@ -96,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/courier", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
@@ -118,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/courier/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
@@ -136,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/courier/location", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
@@ -156,10 +139,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Order routes
   app.get("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
@@ -176,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders/active", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
@@ -193,7 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
@@ -250,10 +232,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Marker routes
   app.get("/api/markers", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
@@ -270,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/markers", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.userId;
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {

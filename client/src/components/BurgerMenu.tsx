@@ -1,6 +1,7 @@
-import { X, Plus, Settings, MapPin, Trash2, User } from "lucide-react";
+import { X, Plus, Settings, MapPin, Trash2, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 interface BurgerMenuProps {
   isOpen: boolean;
@@ -20,61 +21,15 @@ export function BurgerMenu({
   onRemoveCustomerMarker,
 }: BurgerMenuProps) {
   const [location] = useLocation();
+  const { logout, isLoggingOut } = useAuth();
 
-  const menuItems = [
-    {
-      type: "link" as const,
-      icon: Plus,
-      label: "Добавить заказ",
-      href: "/add-order",
-      testId: "link-add-order",
-    },
-    {
-      type: "link" as const,
-      icon: Settings,
-      label: "Изменить данные",
-      href: "/settings",
-      testId: "link-settings",
-    },
-    { type: "divider" as const },
-    {
-      type: "action" as const,
-      icon: MapPin,
-      label: "+ Добавить метку заведения",
-      action: onAddRestaurantMarker,
-      testId: "button-add-restaurant-marker",
-      color: "text-green-600",
-    },
-    {
-      type: "action" as const,
-      icon: Trash2,
-      label: "- Удалить метку заведения",
-      action: onRemoveRestaurantMarker,
-      testId: "button-remove-restaurant-marker",
-      color: "text-red-600",
-    },
-    { type: "divider" as const },
-    {
-      type: "action" as const,
-      icon: User,
-      label: "+ Добавить метку клиента",
-      action: onAddCustomerMarker,
-      testId: "button-add-customer-marker",
-      color: "text-green-600",
-    },
-    {
-      type: "action" as const,
-      icon: Trash2,
-      label: "- Удалить метку клиента",
-      action: onRemoveCustomerMarker,
-      testId: "button-remove-customer-marker",
-      color: "text-red-600",
-    },
-  ];
+  const handleLogout = () => {
+    logout();
+    onClose();
+  };
 
   return (
     <>
-      {/* Overlay */}
       <div
         className={cn(
           "fixed inset-0 bg-black/50 z-40 transition-opacity",
@@ -84,7 +39,6 @@ export function BurgerMenu({
         data-testid="menu-overlay"
       />
 
-      {/* Menu Panel */}
       <div
         className={cn(
           "fixed left-0 top-0 h-full w-80 bg-background z-50 shadow-2xl transition-transform duration-300",
@@ -93,7 +47,7 @@ export function BurgerMenu({
         data-testid="burger-menu"
       >
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Settings</h2>
+          <h2 className="text-lg font-semibold">Меню</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-muted transition-colors"
@@ -103,48 +57,100 @@ export function BurgerMenu({
           </button>
         </div>
 
-        <nav className="py-2">
-          {menuItems.map((item, index) => {
-            if (item.type === "divider") {
-              return <div key={index} className="h-px bg-border my-2" />;
-            }
+        <nav className="py-2 flex flex-col h-[calc(100%-64px)]">
+          <div className="flex-1">
+            <Link
+              href="/add-order"
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors",
+                location === "/add-order" && "bg-muted"
+              )}
+              data-testid="link-add-order"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="text-base font-medium">Добавить заказ</span>
+            </Link>
 
-            if (item.type === "link") {
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={cn(
-                    "flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors",
-                    location === item.href && "bg-muted"
-                  )}
-                  data-testid={item.testId}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="text-base font-medium">{item.label}</span>
-                </Link>
-              );
-            }
+            <Link
+              href="/settings"
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors",
+                location === "/settings" && "bg-muted"
+              )}
+              data-testid="link-settings"
+            >
+              <Settings className="w-5 h-5" />
+              <span className="text-base font-medium">Изменить данные</span>
+            </Link>
 
-            return (
-              <button
-                key={item.label}
-                onClick={() => {
-                  item.action?.();
-                  onClose();
-                }}
-                className={cn(
-                  "w-full flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left",
-                  item.color
-                )}
-                data-testid={item.testId}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="text-base font-medium">{item.label}</span>
-              </button>
-            );
-          })}
+            <div className="h-px bg-border my-2" />
+
+            <button
+              onClick={() => {
+                onAddRestaurantMarker?.();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left text-green-600"
+              data-testid="button-add-restaurant-marker"
+            >
+              <MapPin className="w-5 h-5" />
+              <span className="text-base font-medium">+ Добавить метку заведения</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onRemoveRestaurantMarker?.();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left text-red-600"
+              data-testid="button-remove-restaurant-marker"
+            >
+              <Trash2 className="w-5 h-5" />
+              <span className="text-base font-medium">- Удалить метку заведения</span>
+            </button>
+
+            <div className="h-px bg-border my-2" />
+
+            <button
+              onClick={() => {
+                onAddCustomerMarker?.();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left text-green-600"
+              data-testid="button-add-customer-marker"
+            >
+              <User className="w-5 h-5" />
+              <span className="text-base font-medium">+ Добавить метку клиента</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onRemoveCustomerMarker?.();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left text-red-600"
+              data-testid="button-remove-customer-marker"
+            >
+              <Trash2 className="w-5 h-5" />
+              <span className="text-base font-medium">- Удалить метку клиента</span>
+            </button>
+          </div>
+
+          <div className="border-t mt-auto">
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="w-full flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left text-muted-foreground"
+              data-testid="button-logout"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-base font-medium">
+                {isLoggingOut ? "Выход..." : "Выйти из системы"}
+              </span>
+            </button>
+          </div>
         </nav>
       </div>
     </>

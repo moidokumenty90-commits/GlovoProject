@@ -20,7 +20,7 @@ export function TopBar({
       <button
         onClick={onMenuClick}
         className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
-        data-testid="button-menu"
+        data-testid="button-burger-menu"
       >
         <Menu className="w-5 h-5" />
       </button>

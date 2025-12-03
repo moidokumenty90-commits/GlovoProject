@@ -7,7 +7,7 @@ A mobile-first courier delivery application similar to Glovo. Built for couriers
 - **Frontend**: React + TypeScript + TailwindCSS + ShadcnUI
 - **Backend**: Express.js + TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Replit Auth (OpenID Connect)
+- **Authentication**: Simple username/password (session-based)
 - **Maps**: Leaflet with OpenStreetMap tiles
 
 ## Project Structure
@@ -40,7 +40,8 @@ server/
 ├── db.ts               # Database connection
 ├── storage.ts          # Database operations
 ├── routes.ts           # API endpoints
-├── replitAuth.ts       # Authentication setup
+├── authConfig.ts       # Login credentials (username: "courier", password: "glovo123")
+├── simpleAuth.ts       # Session-based authentication
 └── index.ts            # Server entry
 
 shared/
@@ -55,9 +56,15 @@ shared/
 5. **Marker Management**: Save and delete restaurant/customer locations
 6. **Order Creation**: Admin form to create new orders
 
+## Authentication
+Login credentials are stored in `server/authConfig.ts`:
+- Default username: `courier`
+- Default password: `glovo123`
+
+To change credentials, edit the `AUTH_CREDENTIALS` object in that file.
+
 ## Database Schema
-- `users`: Replit Auth users
-- `sessions`: Auth sessions
+- `users`: System users
 - `couriers`: Courier profiles and status
 - `orders`: Delivery orders with items and status
 - `markers`: Saved map markers
