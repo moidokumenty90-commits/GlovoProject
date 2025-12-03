@@ -6,7 +6,7 @@ import { OrderPanel } from "@/components/OrderPanel";
 import { BottomPanel } from "@/components/BottomPanel";
 import { BurgerMenu } from "@/components/BurgerMenu";
 import { NavigationButton } from "@/components/NavigationButton";
-import { DeliveryConfirmDialog } from "@/components/ConfirmDialog";
+import { DeliveryConfirmDialog, AcceptOrderConfirmDialog } from "@/components/ConfirmDialog";
 import { MarkerDialog, DeleteMarkerDialog } from "@/components/MarkerDialog";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,7 @@ export default function Home() {
   const [orderPanelState, setOrderPanelState] = useState<"collapsed" | "default" | "expanded">("default");
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [confirmDeliveryOpen, setConfirmDeliveryOpen] = useState(false);
+  const [confirmAcceptOpen, setConfirmAcceptOpen] = useState(false);
   const [courierLocation, setCourierLocation] = useState<{ lat: number; lng: number } | null>(null);
   
   // Marker adding mode
@@ -336,7 +337,7 @@ export default function Home() {
             order={order}
             panelState={orderPanelState}
             onPanelStateChange={setOrderPanelState}
-            onAccept={() => acceptOrderMutation.mutate()}
+            onAccept={() => setConfirmAcceptOpen(true)}
             onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
             onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
             onOpenChat={() => setChatOpen(true)}
@@ -379,6 +380,14 @@ export default function Home() {
 
       {/* Dialogs - highest z-index */}
       <div className="relative z-50">
+        {/* Accept Order Confirmation Dialog */}
+        <AcceptOrderConfirmDialog
+          open={confirmAcceptOpen}
+          onOpenChange={setConfirmAcceptOpen}
+          orderNumber={order?.orderNumber || ""}
+          onConfirm={() => acceptOrderMutation.mutate()}
+        />
+
         {/* Delivery Confirmation Dialog */}
         <DeliveryConfirmDialog
           open={confirmDeliveryOpen}
