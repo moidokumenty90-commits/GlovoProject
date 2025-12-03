@@ -288,10 +288,17 @@ export function OrderPanel({
 
             {/* Payment */}
             <div className="px-4 py-4">
-              <p className="text-gray-400 text-sm mb-1">Оплата</p>
-              <p className="text-gray-900 font-medium">
+              <p className="text-gray-400 text-sm mb-2">Оплата</p>
+              <button
+                className="px-4 py-2 rounded-full text-sm font-medium"
+                style={{ 
+                  backgroundColor: order.paymentMethod === "card" ? "#E8F5E9" : "#FFF3E0",
+                  color: order.paymentMethod === "card" ? "#00A082" : "#E65100"
+                }}
+                data-testid="button-payment-status"
+              >
                 {order.paymentMethod === "card" ? "Сплачено онлайн" : "Готівка при отриманні"}
-              </p>
+              </button>
             </div>
 
             {/* Divider */}
