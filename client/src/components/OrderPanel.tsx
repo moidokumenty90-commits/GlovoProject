@@ -221,7 +221,7 @@ export function OrderPanel({
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 mb-4"
               style={{ borderColor: "#00A082" }}
             >
-              <span className="text-2xl font-bold text-gray-900">
+              <span className="text-2xl font-bold" style={{ color: "#000000" }}>
                 #{getShortOrderNum(selectedOrder)}
               </span>
               <Maximize2 className="w-4 h-4" style={{ color: "#00A082" }} />
