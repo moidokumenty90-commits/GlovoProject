@@ -1,12 +1,14 @@
 import type { Express, RequestHandler } from "express";
 import session from "express-session";
 import { storage } from "./storage";
-import { AUTH_CREDENTIALS, COURIER_INFO } from "./authConfig";
+import { validateCredentials, findUser } from "./authConfig";
 
 declare module "express-session" {
   interface SessionData {
     userId?: string;
     isAuthenticated?: boolean;
+    courierName?: string;
+    username?: string;
   }
 }
 
@@ -35,37 +37,42 @@ export function setupSimpleAuth(app: Express) {
         return res.status(400).json({ message: "Введите логин и пароль" });
       }
 
-      if (username !== AUTH_CREDENTIALS.username || password !== AUTH_CREDENTIALS.password) {
+      const validUser = validateCredentials(username, password);
+      if (!validUser) {
         return res.status(401).json({ message: "Неверный логин или пароль" });
       }
 
-      let user = await storage.getUser(COURIER_INFO.id);
+      const { courierInfo } = validUser;
+
+      let user = await storage.getUser(courierInfo.id);
       if (!user) {
         user = await storage.upsertUser({
-          id: COURIER_INFO.id,
+          id: courierInfo.id,
           email: `${username}@courier.local`,
-          firstName: COURIER_INFO.name,
+          firstName: courierInfo.name,
           lastName: "",
         });
       }
 
-      let courier = await storage.getCourierByUserId(COURIER_INFO.id);
+      let courier = await storage.getCourierByUserId(courierInfo.id);
       if (!courier) {
         courier = await storage.createCourier({
-          userId: COURIER_INFO.id,
-          name: COURIER_INFO.name,
+          userId: courierInfo.id,
+          name: courierInfo.name,
           isOnline: false,
         });
       }
 
-      req.session.userId = COURIER_INFO.id;
+      req.session.userId = courierInfo.id;
       req.session.isAuthenticated = true;
+      req.session.courierName = courierInfo.name;
+      req.session.username = username;
 
       res.json({ 
         success: true, 
         user: {
-          id: COURIER_INFO.id,
-          name: COURIER_INFO.name,
+          id: courierInfo.id,
+          name: courierInfo.name,
         }
       });
     } catch (error) {
@@ -90,8 +97,8 @@ export function setupSimpleAuth(app: Express) {
     
     res.json({
       id: req.session.userId,
-      name: COURIER_INFO.name,
-      email: `${AUTH_CREDENTIALS.username}@courier.local`,
+      name: req.session.courierName || "Курьер",
+      email: `${req.session.username || "courier"}@courier.local`,
     });
   });
 }
