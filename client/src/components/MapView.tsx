@@ -335,15 +335,11 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
 
       restaurantMarkerRef.current = L.marker([order.restaurantLat, order.restaurantLng], {
         icon: createRestaurantIcon(),
-      })
-        .bindPopup(`<b>${order.restaurantName}</b><br>${order.restaurantAddress}`)
-        .addTo(map);
+      }).addTo(map);
 
       customerMarkerRef.current = L.marker([order.customerLat, order.customerLng], {
         icon: createCustomerIcon(),
-      })
-        .bindPopup(`<b>${order.customerName}</b><br>${order.customerAddress}`)
-        .addTo(map);
+      }).addTo(map);
 
       // Fit bounds to show all markers
       const points: L.LatLngExpression[] = [
@@ -370,9 +366,7 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
       const leafletMarker = L.marker([marker.lat, marker.lng], { 
         icon,
         draggable: editMarkersMode || false,
-      })
-        .bindPopup(`<b>${marker.name}</b><br>${marker.address || ""}`)
-        .addTo(map);
+      }).addTo(map);
       
       if (editMarkersMode && onMarkerPositionChange) {
         leafletMarker.on("dragend", () => {
