@@ -515,7 +515,7 @@ export function OrderPanel({
               {order.restaurantName}
             </p>
 
-            <div className="flex justify-end pr-6">
+            <div className="flex justify-end pr-4">
               <button
                 onClick={() => setShowItems(!showItems)}
                 className="flex items-center gap-1 mb-2"
