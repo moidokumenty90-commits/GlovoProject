@@ -327,9 +327,18 @@ export function OrderPanel({
             </div>
           </div>
 
-          <p className="px-4 text-gray-600 text-sm mb-2" data-testid="text-restaurant-address">
+          <p className="px-4 text-gray-600 text-sm mb-3" data-testid="text-restaurant-address">
             {firstOrder.restaurantAddress}
           </p>
+
+          {/* Divider line with shadow */}
+          <div 
+            className="h-px mx-4 mb-3"
+            style={{ 
+              backgroundColor: "#E5E7EB",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+            }}
+          />
 
           {firstOrder.restaurantCompany && (
             <p className="px-4 text-gray-500 text-sm mb-3">
