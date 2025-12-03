@@ -185,10 +185,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
-      toast({
-        title: "Локация обновлена",
-        description: "Новое местоположение сохранено",
-      });
     },
     onError: () => {
       toast({
