@@ -574,7 +574,7 @@ export function OrderPanel({
           <div className="h-px w-full" style={{ backgroundColor: "#9CA3AF" }} />
         </div>
 
-        <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-white">
+        <div className="flex-shrink-0 px-4 pb-4 bg-white">
           <button
             onClick={() => onConfirmDelivery?.(order.id)}
             className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
