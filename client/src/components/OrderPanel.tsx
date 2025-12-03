@@ -296,20 +296,12 @@ export function OrderPanel({
               </>
             )}
 
-            {/* Button inside scroll area for default state */}
-            {panelState === "default" && (
-              <div className="mt-4 pb-4">
-                {renderActionButton()}
-              </div>
-            )}
           </div>
 
-          {/* Fixed button at bottom for expanded state */}
-          {panelState === "expanded" && (
-            <div className="flex-shrink-0 px-5 pb-6 pt-2 bg-white border-t border-gray-100">
-              {renderActionButton()}
-            </div>
-          )}
+          {/* Fixed button at bottom for both default and expanded states */}
+          <div className="flex-shrink-0 px-5 pb-6 pt-2 bg-white border-t border-gray-100">
+            {renderActionButton()}
+          </div>
         </>
       )}
     </div>
