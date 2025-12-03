@@ -152,43 +152,47 @@ export function OrderPanel({
           </button>
 
           <div className="p-6 pt-8 overflow-y-auto max-h-[80vh]">
-            <span
-              className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-4"
-              style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
-            >
-              {getOrderStatusLabel(selectedOrder.status)}
-            </span>
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <span
+                  className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-2"
+                  style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
+                >
+                  {getOrderStatusLabel(selectedOrder.status)}
+                </span>
 
-            <div 
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 mb-3"
-              style={{ borderColor: "#00A082" }}
-            >
-              <span className="text-2xl font-bold" style={{ color: "#00A082" }}>
-                #{getShortOrderNum(selectedOrder)}
-              </span>
-              <ExternalLink className="w-4 h-4" style={{ color: "#00A082" }} />
+                <div 
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2"
+                  style={{ borderColor: "#00A082" }}
+                >
+                  <span className="text-2xl font-bold" style={{ color: "#00A082" }}>
+                    #{getShortOrderNum(selectedOrder)}
+                  </span>
+                  <ExternalLink className="w-4 h-4" style={{ color: "#00A082" }} />
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowItems(!showItems)}
+                className="flex items-center gap-1 mt-6"
+                data-testid="button-toggle-items-popup"
+              >
+                <span className="font-medium" style={{ color: "#00A082" }}>
+                  {totalItems} прод.
+                </span>
+                <ChevronDown 
+                  className={cn(
+                    "w-5 h-5 transition-transform",
+                    showItems && "rotate-180"
+                  )}
+                  style={{ color: "#00A082" }}
+                />
+              </button>
             </div>
 
-            <p className="text-gray-500 text-sm mb-6">
+            <p className="text-gray-500 text-sm mb-4">
               {selectedOrder.orderNumber} - #{getShortOrderNum(selectedOrder)} - {selectedOrder.customerName}
             </p>
-
-            <button
-              onClick={() => setShowItems(!showItems)}
-              className="flex items-center gap-1 mb-4"
-              data-testid="button-toggle-items-popup"
-            >
-              <span className="font-medium" style={{ color: "#00A082" }}>
-                {totalItems} прод.
-              </span>
-              <ChevronDown 
-                className={cn(
-                  "w-5 h-5 transition-transform",
-                  showItems && "rotate-180"
-                )}
-                style={{ color: "#00A082" }}
-              />
-            </button>
 
             {showItems && items.length > 0 && (
               <div className="space-y-2 mb-4 pl-1">
