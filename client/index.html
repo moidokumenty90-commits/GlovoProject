@@ -20,6 +20,42 @@
     <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
   </head>
   <body>
+    <div id="splash-screen" style="
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #FFC244;
+      transition: opacity 0.5s ease-out;
+    ">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 24px;">
+        <svg viewBox="0 0 200 60" style="height: 48px; animation: fadeInLogo 0.5s ease-out;">
+          <path d="M15 10 C5 10, 0 20, 0 28 C0 40, 10 45, 20 45 C30 45, 35 38, 35 32 L25 32 C25 35, 22 38, 18 38 C12 38, 8 34, 8 28 C8 22, 12 17, 20 17 C25 17, 28 19, 30 22 L37 17 C33 12, 27 10, 20 10 C17 10, 15 10, 15 10 Z" fill="#00A082"/>
+          <path d="M45 8 L45 45 L53 45 L53 8 Z" fill="#00A082"/>
+          <path d="M75 17 C63 17, 55 25, 55 31 C55 40, 63 45, 75 45 C87 45, 95 37, 95 31 C95 22, 87 17, 75 17 Z M75 38 C68 38, 63 35, 63 31 C63 27, 68 24, 75 24 C82 24, 87 27, 87 31 C87 35, 82 38, 75 38 Z" fill="#00A082"/>
+          <path d="M100 17 L115 45 L123 45 L138 17 L129 17 L119 38 L109 17 Z" fill="#00A082"/>
+          <path d="M155 17 C143 17, 135 25, 135 31 C135 40, 143 45, 155 45 C167 45, 175 37, 175 31 C175 22, 167 17, 155 17 Z M155 38 C148 38, 143 35, 143 31 C143 27, 148 24, 155 24 C162 24, 167 27, 167 31 C167 35, 162 38, 155 38 Z" fill="#00A082"/>
+          <g style="animation: dropPin 0.6s ease-out 0.6s both;">
+            <path d="M177 0C170.4 0 165 5.4 165 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12zm0 18c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z" fill="#00A082"/>
+            <circle cx="177" cy="12" r="3" fill="#FFC244"/>
+          </g>
+        </svg>
+        <div style="display: flex; gap: 6px; animation: fadeIn 0.3s ease-out 1.2s both;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #00A082; animation: pulse 0.8s ease-in-out infinite;"></span>
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #00A082; animation: pulse 0.8s ease-in-out 0.2s infinite;"></span>
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #00A082; animation: pulse 0.8s ease-in-out 0.4s infinite;"></span>
+        </div>
+      </div>
+    </div>
+    <style>
+      @keyframes fadeInLogo { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+      @keyframes dropPin { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.4); opacity: 1; } }
+      #splash-screen.hidden { opacity: 0; pointer-events: none; }
+    </style>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

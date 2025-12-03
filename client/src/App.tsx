@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
-import { SplashScreen } from "@/components/SplashScreen";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
@@ -41,24 +40,27 @@ function Router() {
 }
 
 function AppContent() {
-  const [showSplash, setShowSplash] = useState(() => {
-    // Check if splash was already seen in this session
-    return !sessionStorage.getItem("splashSeen");
-  });
+  const [appReady, setAppReady] = useState(false);
 
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-    sessionStorage.setItem("splashSeen", "true");
-  };
+  useEffect(() => {
+    const splashEl = document.getElementById("splash-screen");
+    
+    const hideSplash = () => {
+      if (splashEl) {
+        splashEl.classList.add("hidden");
+        setTimeout(() => {
+          splashEl.remove();
+        }, 500);
+      }
+      setAppReady(true);
+    };
 
-  return (
-    <>
-      {showSplash && (
-        <SplashScreen onComplete={handleSplashComplete} />
-      )}
-      <Router />
-    </>
-  );
+    const timer = setTimeout(hideSplash, 2800);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return appReady ? <Router /> : null;
 }
 
 function App() {
