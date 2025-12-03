@@ -16,7 +16,7 @@ export function TopBar({
   return (
     <div 
       className="absolute left-0 right-0 z-20 flex items-center justify-between px-4"
-      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
+      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.5rem + 2vh)' }}
     >
       {/* Menu Button - Left */}
       <button
