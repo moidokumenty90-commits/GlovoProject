@@ -171,11 +171,11 @@ export function OrderPanel({
               </div>
             </div>
 
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-gray-500 text-sm">
-                {selectedOrder.orderNumber} - #{getShortOrderNum(selectedOrder)} - {selectedOrder.customerName}
-              </p>
+            <p className="text-gray-500 text-sm mb-4">
+              {selectedOrder.orderNumber} - #{getShortOrderNum(selectedOrder)} - {selectedOrder.customerName}
+            </p>
 
+            <div className="flex justify-end mb-4">
               <button
                 onClick={() => setShowItems(!showItems)}
                 className="flex items-center gap-1"
