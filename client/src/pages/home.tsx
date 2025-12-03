@@ -335,14 +335,7 @@ export default function Home() {
           <OrderPanel
             order={order}
             panelState={orderPanelState}
-            onToggleExpand={() => {
-              // Cycle through states: collapsed -> default -> expanded -> collapsed
-              setOrderPanelState(prev => {
-                if (prev === "collapsed") return "default";
-                if (prev === "default") return "expanded";
-                return "collapsed";
-              });
-            }}
+            onPanelStateChange={setOrderPanelState}
             onAccept={() => acceptOrderMutation.mutate()}
             onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
             onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
