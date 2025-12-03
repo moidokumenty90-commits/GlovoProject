@@ -507,7 +507,7 @@ export function OrderPanel({
               {order.orderNumber}
             </div>
             
-            <p className="text-gray-500 text-sm mb-0.5">
+            <p className="text-sm mb-0.5 font-bold" style={{ color: "#000000" }}>
               #{getShortOrderNum(order)} · {order.customerName}
             </p>
             
