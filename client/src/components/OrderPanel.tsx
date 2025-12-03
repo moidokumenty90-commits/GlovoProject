@@ -465,19 +465,19 @@ export function OrderPanel({
               <div className="flex gap-2">
                 <button
                   onClick={() => handleCall(order.customerPhone)}
-                  className="w-11 h-11 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#E8F5E9" }}
+                  className="w-11 h-11 rounded-full flex items-center justify-center bg-white"
+                  style={{ border: "1.5px solid #6B7280" }}
                   data-testid="button-call-customer"
                 >
-                  <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
+                  <Phone className="w-5 h-5" style={{ color: "#000000" }} />
                 </button>
                 <button
                   onClick={() => onOpenChat?.(order.id)}
-                  className="w-11 h-11 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#E8F5E9" }}
+                  className="w-11 h-11 rounded-full flex items-center justify-center bg-white"
+                  style={{ border: "1.5px solid #6B7280" }}
                   data-testid="button-chat-customer"
                 >
-                  <MessageSquare className="w-5 h-5" style={{ color: "#00A082" }} />
+                  <MessageSquare className="w-5 h-5" style={{ color: "#000000" }} />
                 </button>
               </div>
             </div>
