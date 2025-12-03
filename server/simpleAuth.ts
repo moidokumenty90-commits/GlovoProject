@@ -1,7 +1,9 @@
 import type { Express, RequestHandler } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { storage } from "./storage";
 import { validateCredentials, findUser } from "./authConfig";
+import { Pool } from "@neondatabase/serverless";
 
 declare module "express-session" {
   interface SessionData {
@@ -15,8 +17,19 @@ declare module "express-session" {
 export function setupSimpleAuth(app: Express) {
   const sessionSecret = process.env.SESSION_SECRET || "courier-delivery-secret-key";
   
+  // Setup PostgreSQL session store for session persistence
+  const PgSession = connectPgSimple(session);
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  
+  const sessionStore = new PgSession({
+    pool: pool as any,
+    tableName: "sessions",
+    createTableIfMissing: false, // Table already exists from schema
+  });
+  
   app.use(
     session({
+      store: sessionStore,
       secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
@@ -44,6 +57,14 @@ export function setupSimpleAuth(app: Express) {
 
       const { courierInfo } = validUser;
 
+      // Single-device enforcement: Check for existing session and invalidate it
+      const existingSession = await storage.getUserSession(courierInfo.id);
+      if (existingSession && existingSession.sessionId !== req.sessionID) {
+        // Destroy the old session from the database
+        await storage.deleteSessionById(existingSession.sessionId);
+        console.log(`Invalidated previous session for user ${courierInfo.id}`);
+      }
+
       let user = await storage.getUser(courierInfo.id);
       if (!user) {
         user = await storage.upsertUser({
@@ -67,6 +88,13 @@ export function setupSimpleAuth(app: Express) {
       req.session.isAuthenticated = true;
       req.session.courierName = courierInfo.name;
       req.session.username = username;
+
+      // Get device info for tracking
+      const deviceInfo = req.headers["user-agent"] || "unknown";
+      const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
+
+      // Save session mapping for single-device enforcement
+      await storage.setUserSession(courierInfo.id, req.sessionID!, deviceInfo, ipAddress);
 
       res.json({ 
         success: true, 
