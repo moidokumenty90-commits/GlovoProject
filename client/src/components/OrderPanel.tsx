@@ -1,5 +1,5 @@
 import { useState, useRef, TouchEvent } from "react";
-import { Phone, MessageSquare, ChevronDown, ChevronRight, X, ExternalLink } from "lucide-react";
+import { Phone, MessageSquare, ChevronDown, ChevronRight, X, Maximize2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order, OrderItem } from "@shared/schema";
 
@@ -224,7 +224,7 @@ export function OrderPanel({
               <span className="text-2xl font-bold text-gray-900">
                 #{getShortOrderNum(selectedOrder)}
               </span>
-              <ExternalLink className="w-4 h-4" style={{ color: "#00A082" }} />
+              <Maximize2 className="w-4 h-4" style={{ color: "#00A082" }} />
             </div>
 
             {/* Position 3: Order info */}
