@@ -40,9 +40,9 @@ export function OrderPanel({
       case "collapsed":
         return "h-28";
       case "expanded":
-        return "h-[100dvh]";
+        return "h-[calc(100dvh-5rem)]";
       default:
-        return "h-[50dvh]";
+        return "h-[60dvh]";
     }
   };
 
