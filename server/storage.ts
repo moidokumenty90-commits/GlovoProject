@@ -19,7 +19,7 @@ import {
   type UserSession,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (for Replit Auth)
@@ -37,6 +37,7 @@ export interface IStorage {
   getOrder(id: string): Promise<Order | undefined>;
   getOrders(courierId?: string): Promise<Order[]>;
   getActiveOrder(courierId: string): Promise<Order | undefined>;
+  getActiveOrders(courierId: string): Promise<Order[]>;
   createOrder(order: any): Promise<Order>;
   updateOrder(id: string, data: Partial<Order>): Promise<Order | undefined>;
   updateOrderStatus(id: string, status: string): Promise<Order | undefined>;
@@ -231,6 +232,21 @@ export class DatabaseStorage implements IStorage {
     return inTransitOrders[0];
   }
 
+  async getActiveOrders(courierId: string): Promise<Order[]> {
+    const activeOrders = await db
+      .select()
+      .from(orders)
+      .where(
+        and(
+          eq(orders.courierId, courierId),
+          inArray(orders.status, ["new", "accepted", "in_transit"])
+        )
+      )
+      .orderBy(orders.createdAt);
+    
+    return activeOrders;
+  }
+
   async createOrder(order: any): Promise<Order> {
     const [newOrder] = await db
       .insert(orders)
@@ -241,6 +257,8 @@ export class DatabaseStorage implements IStorage {
         restaurantAddress: order.restaurantAddress,
         restaurantLat: order.restaurantLat,
         restaurantLng: order.restaurantLng,
+        restaurantCompany: order.restaurantCompany,
+        restaurantComment: order.restaurantComment,
         customerName: order.customerName,
         customerId: order.customerId,
         customerPhone: order.customerPhone,
@@ -250,12 +268,14 @@ export class DatabaseStorage implements IStorage {
         houseNumber: order.houseNumber,
         apartment: order.apartment,
         floor: order.floor,
+        buildingInfo: order.buildingInfo,
         items: order.items || [],
         totalPrice: order.totalPrice,
         paymentMethod: order.paymentMethod || "cash",
         needsChange: order.needsChange || false,
         comment: order.comment,
         status: order.status || "new",
+        pickupGroupId: order.pickupGroupId,
       })
       .returning();
     return newOrder;

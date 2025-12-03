@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import type { Server } from "http";
 import { storage } from "./storage";
 import { setupSimpleAuth, isAuthenticated } from "./simpleAuth";
 import { COURIER_INFO } from "./authConfig";
@@ -21,6 +22,8 @@ const createOrderSchema = z.object({
   restaurantAddress: z.string().min(1),
   restaurantLat: z.number(),
   restaurantLng: z.number(),
+  restaurantCompany: z.string().optional(),
+  restaurantComment: z.string().optional(),
   customerName: z.string().min(1),
   customerId: z.string().optional(),
   customerPhone: z.string().optional(),
@@ -30,6 +33,7 @@ const createOrderSchema = z.object({
   houseNumber: z.string().optional(),
   apartment: z.string().optional(),
   floor: z.string().optional(),
+  buildingInfo: z.string().optional(),
   items: z.array(z.object({
     name: z.string(),
     price: z.number(),
@@ -40,6 +44,7 @@ const createOrderSchema = z.object({
   paymentMethod: z.enum(["cash", "card"]).default("cash"),
   needsChange: z.boolean().optional(),
   comment: z.string().optional(),
+  pickupGroupId: z.string().optional(),
 });
 
 const updateOrderStatusSchema = z.object({
@@ -54,7 +59,7 @@ const createMarkerSchema = z.object({
   lng: z.number(),
 });
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<void> {
   setupSimpleAuth(app);
 
   app.get("/api/courier", isAuthenticated, async (req: any, res) => {
@@ -162,14 +167,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const courier = await storage.getCourierByUserId(userId);
       
       if (!courier) {
-        return res.json(null);
+        return res.json([]);
       }
 
-      const order = await storage.getActiveOrder(courier.id);
-      res.json(order || null);
+      const orders = await storage.getActiveOrders(courier.id);
+      res.json(orders || []);
     } catch (error) {
-      console.error("Error fetching active order:", error);
-      res.status(500).json({ message: "Failed to fetch active order" });
+      console.error("Error fetching active orders:", error);
+      res.status(500).json({ message: "Failed to fetch active orders" });
     }
   });
 

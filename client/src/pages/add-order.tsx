@@ -39,10 +39,13 @@ const orderItemSchema = z.object({
 const formSchema = z.object({
   restaurantName: z.string().min(1, "Введите название заведения"),
   restaurantAddress: z.string().min(1, "Введите адрес заведения"),
+  restaurantCompany: z.string().optional(),
+  restaurantComment: z.string().optional(),
   customerAddress: z.string().min(1, "Введите адрес доставки"),
   houseNumber: z.string().optional(),
   apartment: z.string().optional(),
   floor: z.string().optional(),
+  buildingInfo: z.string().optional(),
   customerName: z.string().min(1, "Введите имя клиента"),
   customerId: z.string().optional(),
   customerPhone: z.string().optional(),
@@ -51,6 +54,7 @@ const formSchema = z.object({
   paymentMethod: z.enum(["cash", "card"]),
   needsChange: z.boolean().default(false),
   comment: z.string().optional(),
+  pickupGroupId: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -79,10 +83,13 @@ export default function AddOrder() {
     defaultValues: {
       restaurantName: "",
       restaurantAddress: "",
+      restaurantCompany: "",
+      restaurantComment: "",
       customerAddress: "",
       houseNumber: "",
       apartment: "",
       floor: "",
+      buildingInfo: "",
       customerName: "",
       customerId: "",
       customerPhone: "",
@@ -91,6 +98,7 @@ export default function AddOrder() {
       paymentMethod: "cash",
       needsChange: false,
       comment: "",
+      pickupGroupId: "",
     },
   });
 
@@ -210,6 +218,60 @@ export default function AddOrder() {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="restaurantCompany"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Компания</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Например: VARUS, McDonald's"
+                      {...field}
+                      data-testid="input-restaurant-company"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="restaurantComment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Инструкция для курьера</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Отдельный вход, касса и т.д."
+                      {...field}
+                      data-testid="input-restaurant-comment"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickupGroupId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID группы заказов</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Для группировки нескольких заказов"
+                      {...field}
+                      data-testid="input-pickup-group-id"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </section>
 
           {/* Delivery Address Section */}
@@ -279,6 +341,24 @@ export default function AddOrder() {
                       placeholder="Этаж (опционально)"
                       {...field}
                       data-testid="input-floor"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="buildingInfo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Информация о здании</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Пологовий стаціонар, бізнес-центр"
+                      {...field}
+                      data-testid="input-building-info"
                     />
                   </FormControl>
                   <FormMessage />

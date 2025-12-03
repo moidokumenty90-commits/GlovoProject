@@ -1,39 +1,44 @@
 import { useState, useRef, TouchEvent } from "react";
-import { Phone, MapPin, ChevronDown, ChevronRight } from "lucide-react";
+import { Phone, MessageSquare, ChevronDown, ChevronRight, X, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order, OrderItem } from "@shared/schema";
 
 type PanelState = "collapsed" | "default" | "expanded";
 
 interface OrderPanelProps {
-  order: Order | null;
-  onAccept?: () => void;
-  onConfirmDelivery?: () => void;
-  onStatusChange?: (status: string) => void;
+  orders: Order[];
+  onConfirmPickup?: (orderId: string) => void;
+  onConfirmDelivery?: (orderId: string) => void;
+  onStatusChange?: (orderId: string, status: string) => void;
   panelState?: PanelState;
   onPanelStateChange?: (state: PanelState) => void;
-  onOpenChat?: () => void;
+  onOpenChat?: (orderId: string) => void;
 }
 
 export function OrderPanel({
-  order,
-  onAccept,
+  orders,
+  onConfirmPickup,
   onConfirmDelivery,
   onStatusChange,
   panelState = "default",
   onPanelStateChange,
+  onOpenChat,
 }: OrderPanelProps) {
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [showItems, setShowItems] = useState(false);
   const touchStartY = useRef<number>(0);
   const touchEndY = useRef<number>(0);
   const isDragging = useRef<boolean>(false);
 
-  if (!order) {
+  if (!orders.length) {
     return null;
   }
 
-  const items = (order.items as OrderItem[]) || [];
-  const totalItems = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  const isPickupPhase = orders.some(o => o.status === "new" || o.status === "accepted");
+  const isDeliveryPhase = orders.some(o => o.status === "in_transit");
+  
+  const firstOrder = orders[0];
+  const selectedOrder = selectedOrderId ? orders.find(o => o.id === selectedOrderId) : null;
 
   const getPanelHeight = () => {
     switch (panelState) {
@@ -93,85 +98,391 @@ export function OrderPanel({
     }
   };
 
-  const handleCall = () => {
-    if (order.customerPhone) {
-      window.location.href = `tel:${order.customerPhone}`;
+  const handleCall = (phone?: string | null) => {
+    if (phone) {
+      window.location.href = `tel:${phone}`;
     }
   };
 
-  const formatAddress = () => {
-    let addr = order.customerAddress;
-    if (order.houseNumber) addr += `, ${order.houseNumber}`;
-    return addr;
-  };
-
-  const getShortOrderNum = () => {
+  const getShortOrderNum = (order: Order) => {
     const num = order.orderNumber || "";
     return num.slice(-3);
   };
 
-  const renderActionButton = () => {
-    if (order.status === "new") {
-      return (
-        <button
-          onClick={onAccept}
-          className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
-          data-testid="button-accept-order"
-        >
-          Прийняти замовлення
-        </button>
-      );
-    }
-
-    if (order.status === "accepted") {
-      return (
-        <button
-          onClick={() => onStatusChange?.("in_transit")}
-          className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
-          data-testid="button-start-delivery"
-        >
-          Розпочати доставку
-        </button>
-      );
-    }
-
-    if (order.status === "in_transit") {
-      return (
-        <button
-          onClick={onConfirmDelivery}
-          className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
-          data-testid="button-confirm-delivery"
-        >
-          Підтвердьте доставку
-        </button>
-      );
-    }
-
-    return null;
+  const getTotalItems = (order: Order) => {
+    const items = (order.items as OrderItem[]) || [];
+    return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
   };
 
-  return (
-    <div
-      className={cn(
-        "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300 ease-out flex flex-col",
-        getPanelHeight()
-      )}
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      data-testid="order-panel"
-    >
-      {/* Drag Handle */}
-      <div
-        onTouchStart={handleDragStart}
-        onTouchMove={handleDragMove}
-        onTouchEnd={handleDragEnd}
-        onClick={handleToggle}
-        className="w-full py-3 flex items-center justify-center cursor-pointer flex-shrink-0 touch-none"
-        data-testid="button-toggle-panel"
-      >
-        <div className="w-10 h-1 bg-gray-300 rounded-full" />
-      </div>
+  const getOrderStatusLabel = (status: string) => {
+    switch (status) {
+      case "new": return "Новий";
+      case "accepted": return "Готов";
+      case "in_transit": return "В дорозі";
+      case "delivered": return "Доставлено";
+      default: return status;
+    }
+  };
 
-      {panelState === "collapsed" ? (
+  const pluralizeOrders = (count: number) => {
+    if (count === 1) return "заказ";
+    if (count >= 2 && count <= 4) return "заказа";
+    return "заказов";
+  };
+
+  const renderOrderDetailPopup = () => {
+    if (!selectedOrder) return null;
+
+    const items = (selectedOrder.items as OrderItem[]) || [];
+    const totalItems = getTotalItems(selectedOrder);
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div 
+          className="absolute inset-0 bg-black/40"
+          onClick={() => setSelectedOrderId(null)}
+        />
+        <div className="relative w-full bg-white rounded-t-3xl max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
+          <button
+            onClick={() => setSelectedOrderId(null)}
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center"
+            data-testid="button-close-order-detail"
+          >
+            <X className="w-6 h-6 text-gray-400" />
+          </button>
+
+          <div className="p-6 pt-8 overflow-y-auto max-h-[80vh]">
+            <span
+              className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-4"
+              style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
+            >
+              {getOrderStatusLabel(selectedOrder.status)}
+            </span>
+
+            <div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 mb-3"
+              style={{ borderColor: "#00A082" }}
+            >
+              <span className="text-2xl font-bold" style={{ color: "#00A082" }}>
+                #{getShortOrderNum(selectedOrder)}
+              </span>
+              <ExternalLink className="w-4 h-4" style={{ color: "#00A082" }} />
+            </div>
+
+            <p className="text-gray-500 text-sm mb-6">
+              {selectedOrder.orderNumber} - #{getShortOrderNum(selectedOrder)} - {selectedOrder.customerName}
+            </p>
+
+            <button
+              onClick={() => setShowItems(!showItems)}
+              className="flex items-center gap-1 mb-4"
+              data-testid="button-toggle-items-popup"
+            >
+              <span className="font-medium" style={{ color: "#00A082" }}>
+                {totalItems} прод.
+              </span>
+              <ChevronDown 
+                className={cn(
+                  "w-5 h-5 transition-transform",
+                  showItems && "rotate-180"
+                )}
+                style={{ color: "#00A082" }}
+              />
+            </button>
+
+            {showItems && items.length > 0 && (
+              <div className="space-y-2 mb-4 pl-1">
+                {items.map((item, index) => (
+                  <div key={index} className="flex justify-between items-start text-sm">
+                    <div className="flex gap-2">
+                      <span className="text-gray-500">{item.quantity || 1}x</span>
+                      <span className="text-gray-700">{item.name}</span>
+                    </div>
+                    <span className="text-gray-500">{item.price.toFixed(2)} ₴</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="h-px bg-gray-100 my-4" />
+
+            <p className="text-gray-400 text-sm mb-1">Оплата</p>
+            <p className="text-gray-900 mb-6">
+              {selectedOrder.paymentMethod === "card" 
+                ? "Оплата в пункте получения не требуется" 
+                : "Готівка при отриманні"}
+            </p>
+
+            <button
+              onClick={() => {
+                if (selectedOrder.status === "new") {
+                  onStatusChange?.(selectedOrder.id, "accepted");
+                } else if (selectedOrder.status === "accepted") {
+                  onConfirmPickup?.(selectedOrder.id);
+                } else if (selectedOrder.status === "in_transit") {
+                  onConfirmDelivery?.(selectedOrder.id);
+                }
+                setSelectedOrderId(null);
+              }}
+              className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
+              data-testid="button-confirm-order"
+            >
+              {selectedOrder.status === "new" 
+                ? "Прийняти замовлення" 
+                : selectedOrder.status === "in_transit" 
+                  ? "Подтвердить доставку" 
+                  : "Подтвердить получение"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPickupPanel = () => {
+    return (
+      <>
+        <div className="overflow-y-auto flex-1 overscroll-contain">
+          <div className="px-4 pb-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900" data-testid="text-restaurant-name">
+                  {firstOrder.restaurantName}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  {orders.length} {pluralizeOrders(orders.length)}
+                </p>
+              </div>
+              
+              <button
+                onClick={() => handleCall(firstOrder.customerPhone)}
+                className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "#E8F5E9" }}
+                data-testid="button-call-restaurant"
+              >
+                <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
+              </button>
+            </div>
+          </div>
+
+          <p className="px-4 text-gray-600 text-sm mb-2" data-testid="text-restaurant-address">
+            {firstOrder.restaurantAddress}
+          </p>
+
+          {firstOrder.restaurantCompany && (
+            <p className="px-4 text-gray-500 text-sm mb-3">
+              Компания: {firstOrder.restaurantCompany}
+            </p>
+          )}
+
+          {firstOrder.restaurantComment && (
+            <div className="px-4 mb-4">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">⇄</span>
+                <div>
+                  <p className="text-gray-600 text-sm">{firstOrder.restaurantComment}</p>
+                  <button className="text-sm font-medium" style={{ color: "#00A082" }}>
+                    Перевести
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="px-4 space-y-4">
+            {orders.map((order, index) => (
+              <div key={order.id} className="flex items-start gap-3">
+                <div className="flex flex-col items-center">
+                  <span 
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold"
+                    style={{ backgroundColor: "#00A082", color: "white" }}
+                  >
+                    {index + 1}
+                  </span>
+                  {index < orders.length - 1 && (
+                    <div className="w-0.5 h-16 bg-gray-200 mt-1" />
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <span
+                    className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-2"
+                    style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
+                  >
+                    {getOrderStatusLabel(order.status)}
+                  </span>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div 
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 mb-1"
+                        style={{ borderColor: "#00A082" }}
+                      >
+                        <span className="text-lg font-bold" style={{ color: "#00A082" }}>
+                          #{getShortOrderNum(order)}
+                        </span>
+                        <ExternalLink className="w-3.5 h-3.5" style={{ color: "#00A082" }} />
+                      </div>
+                      <p className="text-gray-500 text-xs">
+                        {order.orderNumber} - #{getShortOrderNum(order)} - {order.customerName}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSelectedOrderId(order.id);
+                        setShowItems(false);
+                      }}
+                      className="w-12 h-12 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: "#00A082" }}
+                      data-testid={`button-open-order-${order.id}`}
+                    >
+                      <ChevronRight className="w-6 h-6 text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  const renderDeliveryPanel = () => {
+    const order = orders.find(o => o.status === "in_transit") || firstOrder;
+    const items = (order.items as OrderItem[]) || [];
+    const totalItems = getTotalItems(order);
+
+    const formatAddress = () => {
+      let addr = order.customerAddress;
+      if (order.houseNumber) addr += `, ${order.houseNumber}`;
+      return addr;
+    };
+
+    return (
+      <>
+        <div className="overflow-y-auto flex-1 overscroll-contain">
+          <div className="px-4 pb-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900" data-testid="text-customer-name">
+                  {order.customerName}
+                </h2>
+                <p className="text-gray-500 text-sm" data-testid="text-customer-address">
+                  {formatAddress()}
+                </p>
+              </div>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleCall(order.customerPhone)}
+                  className="w-11 h-11 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#E8F5E9" }}
+                  data-testid="button-call-customer"
+                >
+                  <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
+                </button>
+                <button
+                  onClick={() => onOpenChat?.(order.id)}
+                  className="w-11 h-11 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#E8F5E9" }}
+                  data-testid="button-chat-customer"
+                >
+                  <MessageSquare className="w-5 h-5" style={{ color: "#00A082" }} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {order.buildingInfo && (
+            <p className="px-4 text-gray-500 text-sm mb-3">
+              Здание: {order.buildingInfo}
+            </p>
+          )}
+
+          <div className="px-4 py-4">
+            <div className="text-3xl font-bold text-gray-900 mb-1 tracking-tight" data-testid="text-order-number">
+              {order.orderNumber}
+            </div>
+            
+            <p className="text-gray-500 text-sm mb-0.5">
+              #{getShortOrderNum(order)} · {order.customerName}
+            </p>
+            
+            <p className="font-semibold text-gray-900 text-base mb-4" data-testid="text-restaurant-name-delivery">
+              {order.restaurantName}
+            </p>
+
+            <button
+              onClick={() => setShowItems(!showItems)}
+              className="flex items-center gap-1 mb-2"
+              data-testid="button-toggle-items"
+            >
+              <span className="font-medium" style={{ color: "#00A082" }}>
+                {totalItems} прод.
+              </span>
+              <ChevronDown 
+                className={cn(
+                  "w-5 h-5 transition-transform",
+                  showItems && "rotate-180"
+                )}
+                style={{ color: "#00A082" }}
+              />
+            </button>
+
+            {showItems && items.length > 0 && (
+              <div className="space-y-2 mb-4 pl-1">
+                {items.map((item, index) => (
+                  <div key={index} className="flex justify-between items-start text-sm">
+                    <div className="flex gap-2">
+                      <span className="text-gray-500">{item.quantity || 1}x</span>
+                      <span className="text-gray-700">{item.name}</span>
+                    </div>
+                    <span className="text-gray-500">{item.price.toFixed(2)} ₴</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="h-px bg-gray-100 mx-4" />
+
+          <div className="px-4 py-4">
+            <p className="text-gray-400 text-sm mb-1">Оплата</p>
+            <p className="text-gray-900">
+              {order.paymentMethod === "card" ? "Оплачено онлайн" : "Готівка при отриманні"}
+            </p>
+          </div>
+
+          <div className="h-px bg-gray-100 mx-4" />
+
+          <button 
+            className="w-full px-4 py-4 flex items-center justify-between"
+            data-testid="button-client-unavailable"
+          >
+            <span className="text-gray-900 font-medium">Клиент недоступен</span>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+
+        <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-white">
+          <button
+            onClick={() => onConfirmDelivery?.(order.id)}
+            className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
+            data-testid="button-confirm-delivery"
+          >
+            Подтвердить доставку
+          </button>
+        </div>
+      </>
+    );
+  };
+
+  const renderCollapsedContent = () => {
+    if (isDeliveryPhase) {
+      const order = orders.find(o => o.status === "in_transit") || firstOrder;
+      return (
         <div 
           className="px-4 flex items-start justify-between flex-shrink-0"
           onTouchStart={handleDragStart}
@@ -181,10 +492,10 @@ export function OrderPanel({
           <div>
             <h2 className="text-xl font-bold text-gray-900">{order.customerName}</h2>
             <p className="text-gray-400 text-sm">Доставка</p>
-            <p className="text-gray-400 text-sm">#{getShortOrderNum()} • {order.orderNumber}</p>
+            <p className="text-gray-400 text-sm">#{getShortOrderNum(order)} • {order.orderNumber}</p>
           </div>
           <button
-            onClick={(e) => { e.stopPropagation(); handleCall(); }}
+            onClick={(e) => { e.stopPropagation(); handleCall(order.customerPhone); }}
             className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: "#E8F5E9" }}
             data-testid="button-call-collapsed"
@@ -192,162 +503,62 @@ export function OrderPanel({
             <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
           </button>
         </div>
-      ) : (
-        <>
-          <div className="overflow-y-auto flex-1 overscroll-contain">
-            {/* Header: Name + Phone */}
-            <div className="px-4 pb-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900" data-testid="text-customer-name">
-                    {order.customerName}
-                  </h2>
-                  <p className="text-gray-400 text-sm">Доставка</p>
-                  <p className="text-gray-400 text-sm">
-                    #{getShortOrderNum()} • {order.orderNumber}
-                  </p>
-                </div>
-                
-                <button
-                  onClick={handleCall}
-                  className="w-12 h-12 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#E8F5E9" }}
-                  data-testid="button-call"
-                >
-                  <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
-                </button>
-              </div>
-            </div>
+      );
+    }
 
-            {/* Address */}
-            <div className="px-4 pb-4 flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-              <p className="text-gray-600 text-sm" data-testid="text-customer-address">
-                {formatAddress()}
-                {order.floor && `, поверх ${order.floor}`}
-                {order.apartment && `, кв. ${order.apartment}`}
-              </p>
-            </div>
+    return (
+      <div 
+        className="px-4 flex items-start justify-between flex-shrink-0"
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={handleDragEnd}
+      >
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">{firstOrder.restaurantName}</h2>
+          <p className="text-gray-400 text-sm">{orders.length} {pluralizeOrders(orders.length)}</p>
+          <p className="text-gray-400 text-sm truncate max-w-[250px]">{firstOrder.restaurantAddress}</p>
+        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); handleCall(firstOrder.customerPhone); }}
+          className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: "#E8F5E9" }}
+          data-testid="button-call-collapsed"
+        >
+          <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
+        </button>
+      </div>
+    );
+  };
 
-            {/* Divider */}
-            <div className="h-px bg-gray-100 mx-4" />
+  return (
+    <>
+      <div
+        className={cn(
+          "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300 ease-out flex flex-col",
+          getPanelHeight()
+        )}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        data-testid="order-panel"
+      >
+        <div
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+          onClick={handleToggle}
+          className="w-full py-3 flex items-center justify-center cursor-pointer flex-shrink-0 touch-none"
+          data-testid="button-toggle-panel"
+        >
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
 
-            {/* Order Details */}
-            <div className="px-4 py-4">
-              {/* Large Order Number */}
-              <div className="text-3xl font-bold text-gray-900 mb-1 tracking-tight" data-testid="text-order-number">
-                {order.orderNumber}
-              </div>
-              
-              {/* Order info line */}
-              <p className="text-gray-500 text-sm mb-0.5">
-                #{getShortOrderNum()} • {order.customerName}
-              </p>
-              
-              {/* Restaurant name */}
-              <p className="font-semibold text-gray-900 text-base mb-4" data-testid="text-restaurant-name">
-                {order.restaurantName}
-              </p>
+        {panelState === "collapsed" ? (
+          renderCollapsedContent()
+        ) : (
+          isDeliveryPhase ? renderDeliveryPanel() : renderPickupPanel()
+        )}
+      </div>
 
-              {/* Products toggle */}
-              <button
-                onClick={() => setShowItems(!showItems)}
-                className="flex items-center gap-1 mb-2"
-                data-testid="button-toggle-items"
-              >
-                <span className="font-medium" style={{ color: "#00A082" }}>
-                  {totalItems} продуктів
-                </span>
-                <ChevronDown 
-                  className={cn(
-                    "w-5 h-5 transition-transform",
-                    showItems && "rotate-180"
-                  )}
-                  style={{ color: "#00A082" }}
-                />
-              </button>
-
-              {/* Items list */}
-              {showItems && items.length > 0 && (
-                <div className="space-y-2 mb-4 pl-1">
-                  {items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-start text-sm">
-                      <div className="flex gap-2">
-                        <span className="text-gray-500">{item.quantity || 1}x</span>
-                        <span className="text-gray-700">{item.name}</span>
-                      </div>
-                      <span className="text-gray-500">{item.price.toFixed(2)} ₴</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className="h-px bg-gray-100 mx-4" />
-
-            {/* Payment */}
-            <div className="px-4 py-4">
-              <p className="text-gray-400 text-sm mb-2">Оплата</p>
-              <button
-                className="px-4 py-2 rounded-full text-sm font-medium"
-                style={{ 
-                  backgroundColor: order.paymentMethod === "card" ? "#E8F5E9" : "#FFF3E0",
-                  color: order.paymentMethod === "card" ? "#00A082" : "#E65100"
-                }}
-                data-testid="button-payment-status"
-              >
-                {order.paymentMethod === "card" ? "Сплачено онлайн" : "Готівка при отриманні"}
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="h-px bg-gray-100 mx-4" />
-
-            {/* Client unavailable button */}
-            <button 
-              className="w-full px-4 py-4 flex items-center justify-between"
-              data-testid="button-client-unavailable"
-            >
-              <span className="text-gray-900 font-medium">Клієнт недоступний</span>
-              <ChevronRight className="w-5 h-5" style={{ color: "#00A082" }} />
-            </button>
-
-            {/* Extra space for expanded view */}
-            {panelState === "expanded" && (
-              <>
-                <div className="h-px bg-gray-100 mx-4" />
-                
-                {/* Total */}
-                <div className="px-4 py-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-500">Сума замовлення</span>
-                    <span className="text-xl font-bold text-gray-900" data-testid="text-order-total">
-                      {order.totalPrice.toFixed(2)} ₴
-                    </span>
-                  </div>
-                </div>
-
-                {/* Comment if exists */}
-                {order.comment && (
-                  <>
-                    <div className="h-px bg-gray-100 mx-4" />
-                    <div className="px-4 py-4">
-                      <p className="text-gray-400 text-sm mb-1">Коментар</p>
-                      <p className="text-gray-700 text-sm">{order.comment}</p>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Fixed button at bottom */}
-          <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-white">
-            {renderActionButton()}
-          </div>
-        </>
-      )}
-    </div>
+      {selectedOrderId && renderOrderDetailPopup()}
+    </>
   );
 }

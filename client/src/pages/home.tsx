@@ -6,7 +6,7 @@ import { OrderPanel } from "@/components/OrderPanel";
 import { BottomPanel } from "@/components/BottomPanel";
 import { BurgerMenu } from "@/components/BurgerMenu";
 import { NavigationButton } from "@/components/NavigationButton";
-import { DeliveryConfirmDialog, AcceptOrderConfirmDialog } from "@/components/ConfirmDialog";
+import { DeliveryConfirmDialog } from "@/components/ConfirmDialog";
 import { MarkerDialog, DeleteMarkerDialog } from "@/components/MarkerDialog";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useToast } from "@/hooks/use-toast";
@@ -23,7 +23,6 @@ export default function Home() {
   const [orderPanelState, setOrderPanelState] = useState<"collapsed" | "default" | "expanded">("default");
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [confirmDeliveryOpen, setConfirmDeliveryOpen] = useState(false);
-  const [confirmAcceptOpen, setConfirmAcceptOpen] = useState(false);
   const [courierLocation, setCourierLocation] = useState<{ lat: number; lng: number } | null>(null);
   
   // Marker adding mode
@@ -43,11 +42,14 @@ export default function Home() {
     queryKey: ["/api/courier"],
   });
 
-  // Fetch active order
-  const { data: order, isLoading: orderLoading } = useQuery<Order | null>({
+  // Fetch active orders (can be multiple from same restaurant)
+  const { data: activeOrders = [], isLoading: orderLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders/active"],
-    refetchInterval: 10000, // Poll less frequently since we have WebSocket
+    refetchInterval: 10000,
   });
+  
+  // For backward compatibility - get first order
+  const order = activeOrders.length > 0 ? activeOrders[0] : null;
 
   // WebSocket for real-time notifications
   const { isConnected: wsConnected } = useWebSocket({
@@ -91,28 +93,26 @@ export default function Home() {
     },
   });
 
-  // Accept order mutation
-  const acceptOrderMutation = useMutation({
-    mutationFn: async () => {
-      if (!order) return;
-      return await apiRequest("PATCH", `/api/orders/${order.id}/status`, {
-        status: "accepted",
+  // Accept order mutation (confirm pickup)
+  const confirmPickupMutation = useMutation({
+    mutationFn: async (orderId: string) => {
+      return await apiRequest("PATCH", `/api/orders/${orderId}/status`, {
+        status: "in_transit",
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
       toast({
-        title: "Заказ принят",
-        description: "Вы приняли заказ к доставке",
+        title: "Заказ получен",
+        description: "Теперь доставьте заказ клиенту",
       });
     },
   });
 
   // Update order status mutation
   const updateOrderStatusMutation = useMutation({
-    mutationFn: async (status: string) => {
-      if (!order) return;
-      return await apiRequest("PATCH", `/api/orders/${order.id}/status`, { status });
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      return await apiRequest("PATCH", `/api/orders/${orderId}/status`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
@@ -121,9 +121,8 @@ export default function Home() {
 
   // Confirm delivery mutation
   const confirmDeliveryMutation = useMutation({
-    mutationFn: async () => {
-      if (!order) return;
-      return await apiRequest("PATCH", `/api/orders/${order.id}/status`, {
+    mutationFn: async (orderId: string) => {
+      return await apiRequest("PATCH", `/api/orders/${orderId}/status`, {
         status: "delivered",
       });
     },
@@ -330,17 +329,17 @@ export default function Home() {
         </div>
       )}
 
-      {/* Order Panel - Show when there's an active order */}
-      {order && (
+      {/* Order Panel - Show when there are active orders */}
+      {activeOrders.length > 0 && (
         <div className="relative z-30">
           <OrderPanel
-            order={order}
+            orders={activeOrders}
             panelState={orderPanelState}
             onPanelStateChange={setOrderPanelState}
-            onAccept={() => setConfirmAcceptOpen(true)}
-            onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
-            onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
-            onOpenChat={() => setChatOpen(true)}
+            onConfirmPickup={(orderId) => confirmPickupMutation.mutate(orderId)}
+            onConfirmDelivery={(orderId) => confirmDeliveryMutation.mutate(orderId)}
+            onStatusChange={(orderId, status) => updateOrderStatusMutation.mutate({ orderId, status })}
+            onOpenChat={(orderId) => setChatOpen(true)}
           />
         </div>
       )}
@@ -380,20 +379,12 @@ export default function Home() {
 
       {/* Dialogs - highest z-index */}
       <div className="relative z-50">
-        {/* Accept Order Confirmation Dialog */}
-        <AcceptOrderConfirmDialog
-          open={confirmAcceptOpen}
-          onOpenChange={setConfirmAcceptOpen}
-          orderNumber={order?.orderNumber || ""}
-          onConfirm={() => acceptOrderMutation.mutate()}
-        />
-
         {/* Delivery Confirmation Dialog */}
         <DeliveryConfirmDialog
           open={confirmDeliveryOpen}
           onOpenChange={setConfirmDeliveryOpen}
           orderNumber={order?.orderNumber || ""}
-          onConfirm={() => confirmDeliveryMutation.mutate()}
+          onConfirm={() => order && confirmDeliveryMutation.mutate(order.id)}
         />
 
         {/* Marker Dialog for entering name after positioning */}
