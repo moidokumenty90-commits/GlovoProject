@@ -41,26 +41,19 @@ function Router() {
 }
 
 function AppContent() {
-  const [showSplash, setShowSplash] = useState(true);
-  const [hasSeenSplash, setHasSeenSplash] = useState(false);
-
-  useEffect(() => {
-    const seen = sessionStorage.getItem("splashSeen");
-    if (seen) {
-      setShowSplash(false);
-      setHasSeenSplash(true);
-    }
-  }, []);
+  const [showSplash, setShowSplash] = useState(() => {
+    // Check if splash was already seen in this session
+    return !sessionStorage.getItem("splashSeen");
+  });
 
   const handleSplashComplete = () => {
     setShowSplash(false);
-    setHasSeenSplash(true);
     sessionStorage.setItem("splashSeen", "true");
   };
 
   return (
     <>
-      {showSplash && !hasSeenSplash && (
+      {showSplash && (
         <SplashScreen onComplete={handleSplashComplete} />
       )}
       <Router />
