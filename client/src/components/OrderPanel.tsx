@@ -38,7 +38,7 @@ export function OrderPanel({
   const getPanelHeight = () => {
     switch (panelState) {
       case "collapsed":
-        return "h-16";
+        return "h-28";
       case "expanded":
         return "h-[100dvh]";
       default:
@@ -173,15 +173,24 @@ export function OrderPanel({
 
       {panelState === "collapsed" ? (
         <div 
-          className="px-4 flex items-center justify-between flex-shrink-0"
+          className="px-4 flex items-start justify-between flex-shrink-0"
           onTouchStart={handleDragStart}
           onTouchMove={handleDragMove}
           onTouchEnd={handleDragEnd}
         >
           <div>
-            <span className="text-base font-bold text-gray-900">{order.customerName}</span>
-            <span className="text-gray-400 ml-2 text-sm">#{getShortOrderNum()}</span>
+            <h2 className="text-xl font-bold text-gray-900">{order.customerName}</h2>
+            <p className="text-gray-400 text-sm">Доставка</p>
+            <p className="text-gray-400 text-sm">#{getShortOrderNum()} • {order.orderNumber}</p>
           </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleCall(); }}
+            className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: "#E8F5E9" }}
+            data-testid="button-call-collapsed"
+          >
+            <Phone className="w-5 h-5" style={{ color: "#00A082" }} />
+          </button>
         </div>
       ) : (
         <>
