@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { MapView, MapViewRef } from "@/components/MapView";
 import { TopBar } from "@/components/TopBar";
 import { OrderPanel } from "@/components/OrderPanel";
+import { BottomPanel } from "@/components/BottomPanel";
 import { BurgerMenu } from "@/components/BurgerMenu";
 import { NavigationButton } from "@/components/NavigationButton";
 import { DeliveryConfirmDialog } from "@/components/ConfirmDialog";
@@ -335,7 +336,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* Order Panel */}
+      {/* Order Panel - Show when there's an active order */}
       {order && (
         <div className="relative z-30">
           <OrderPanel
@@ -346,6 +347,16 @@ export default function Home() {
             onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
             onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
             onOpenChat={() => setChatOpen(true)}
+          />
+        </div>
+      )}
+
+      {/* Bottom Panel - Show when there's no active order */}
+      {!order && !orderLoading && (
+        <div className="relative z-30">
+          <BottomPanel
+            isExpanded={panelExpanded}
+            onToggleExpand={() => setPanelExpanded(!panelExpanded)}
           />
         </div>
       )}
