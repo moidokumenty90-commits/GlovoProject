@@ -500,7 +500,7 @@ export function OrderPanel({
           )}
 
           {/* Gray separator line after building info */}
-          <div className="h-px w-full mb-2" style={{ backgroundColor: "#9CA3AF" }} />
+          <div className="w-full mb-2" style={{ height: "0.5px", backgroundColor: "#D1D5DB" }} />
 
           <div className="px-4 py-4">
             <div className="text-3xl font-bold text-gray-900 mb-1 tracking-tight" data-testid="text-order-number">
