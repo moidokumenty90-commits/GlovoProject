@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Order, Marker as MarkerType } from "@shared/schema";
@@ -7,10 +7,22 @@ interface MapViewProps {
   courierLocation: { lat: number; lng: number } | null;
   order: Order | null;
   markers: MarkerType[];
-  onMapClick?: (lat: number, lng: number) => void;
+  draggableMarker?: {
+    type: "restaurant" | "customer";
+    onPositionChange: (lat: number, lng: number) => void;
+  } | null;
 }
 
-export function MapView({ courierLocation, order, markers, onMapClick }: MapViewProps) {
+export interface MapViewRef {
+  getCenter: () => { lat: number; lng: number } | null;
+}
+
+export const MapView = forwardRef<MapViewRef, MapViewProps>(({ 
+  courierLocation, 
+  order, 
+  markers,
+  draggableMarker,
+}, ref) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const courierMarkerRef = useRef<L.Marker | null>(null);
@@ -18,11 +30,19 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
   const customerMarkerRef = useRef<L.Marker | null>(null);
   const routeLayerRef = useRef<L.Polyline | null>(null);
   const savedMarkersRef = useRef<L.Marker[]>([]);
+  const draggableMarkerRef = useRef<L.Marker | null>(null);
 
-  // Default center (Dnipro, Ukraine)
   const defaultCenter: [number, number] = [48.4647, 35.0462];
 
-  // Custom icon creators
+  useImperativeHandle(ref, () => ({
+    getCenter: () => {
+      const map = mapInstanceRef.current;
+      if (!map) return null;
+      const center = map.getCenter();
+      return { lat: center.lat, lng: center.lng };
+    },
+  }));
+
   const createCourierIcon = () => {
     return L.divIcon({
       className: "courier-marker",
@@ -117,6 +137,57 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
     });
   };
 
+  const createDraggableIcon = (type: "restaurant" | "customer") => {
+    const color = type === "restaurant" ? "#22C55E" : "#1F2937";
+    const icon = type === "restaurant" 
+      ? `<path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/>`
+      : `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`;
+    
+    return L.divIcon({
+      className: "draggable-marker",
+      html: `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+        ">
+          <div style="
+            width: 48px;
+            height: 48px;
+            background: ${color};
+            border: 4px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 0.5s ease-in-out infinite alternate;
+          ">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
+              ${icon}
+            </svg>
+          </div>
+          <div style="
+            width: 4px;
+            height: 20px;
+            background: ${color};
+            margin-top: -4px;
+          "></div>
+          <div style="
+            width: 12px;
+            height: 12px;
+            background: ${color};
+            border-radius: 50%;
+            margin-top: -2px;
+            opacity: 0.5;
+          "></div>
+        </div>
+      `,
+      iconSize: [48, 80],
+      iconAnchor: [24, 80],
+    });
+  };
+
   const createSavedRestaurantIcon = () => {
     return L.divIcon({
       className: "saved-restaurant-marker",
@@ -168,7 +239,6 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
     });
   };
 
-  // Initialize map
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -180,13 +250,7 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
-    // Add zoom control to bottom right
     L.control.zoom({ position: "bottomright" }).addTo(map);
-
-    // Add click handler
-    map.on("click", (e) => {
-      onMapClick?.(e.latlng.lat, e.latlng.lng);
-    });
 
     mapInstanceRef.current = map;
 
@@ -196,7 +260,6 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
     };
   }, []);
 
-  // Update courier marker
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -215,12 +278,10 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
     }
   }, [courierLocation]);
 
-  // Update order markers and route
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Clear existing order markers
     if (restaurantMarkerRef.current) {
       restaurantMarkerRef.current.remove();
       restaurantMarkerRef.current = null;
@@ -235,21 +296,18 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
     }
 
     if (order && order.status !== "delivered") {
-      // Add restaurant marker
       restaurantMarkerRef.current = L.marker([order.restaurantLat, order.restaurantLng], {
         icon: createRestaurantIcon(),
       })
         .bindPopup(`<b>${order.restaurantName}</b><br>${order.restaurantAddress}`)
         .addTo(map);
 
-      // Add customer marker
       customerMarkerRef.current = L.marker([order.customerLat, order.customerLng], {
         icon: createCustomerIcon(),
       })
         .bindPopup(`<b>${order.customerName}</b><br>${order.customerAddress}`)
         .addTo(map);
 
-      // Draw route
       const routePoints: L.LatLngExpression[] = [];
       
       if (courierLocation) {
@@ -264,22 +322,18 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
         opacity: 0.8,
       }).addTo(map);
 
-      // Fit bounds to show all markers
       const bounds = L.latLngBounds(routePoints);
       map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [order, courierLocation]);
 
-  // Update saved markers
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Clear existing saved markers
     savedMarkersRef.current.forEach((marker) => marker.remove());
     savedMarkersRef.current = [];
 
-    // Add saved markers
     markers.forEach((marker) => {
       const icon = marker.type === "restaurant" ? createSavedRestaurantIcon() : createSavedCustomerIcon();
       const leafletMarker = L.marker([marker.lat, marker.lng], { icon })
@@ -289,7 +343,39 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
     });
   }, [markers]);
 
-  // Center on courier when location changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (draggableMarkerRef.current) {
+      draggableMarkerRef.current.remove();
+      draggableMarkerRef.current = null;
+    }
+
+    if (draggableMarker) {
+      const center = map.getCenter();
+      const marker = L.marker([center.lat, center.lng], {
+        icon: createDraggableIcon(draggableMarker.type),
+        draggable: true,
+        autoPan: true,
+      }).addTo(map);
+
+      draggableMarker.onPositionChange(center.lat, center.lng);
+
+      marker.on("drag", () => {
+        const pos = marker.getLatLng();
+        draggableMarker.onPositionChange(pos.lat, pos.lng);
+      });
+
+      marker.on("dragend", () => {
+        const pos = marker.getLatLng();
+        draggableMarker.onPositionChange(pos.lat, pos.lng);
+      });
+
+      draggableMarkerRef.current = marker;
+    }
+  }, [draggableMarker]);
+
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !courierLocation || order) return;
@@ -314,6 +400,14 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
             opacity: 1;
           }
         }
+        @keyframes bounce {
+          0% {
+            transform: translateY(0);
+          }
+          100% {
+            transform: translateY(-8px);
+          }
+        }
         .leaflet-container {
           font-family: inherit;
           z-index: 1 !important;
@@ -327,6 +421,12 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
         .leaflet-control-container {
           z-index: 10 !important;
         }
+        .draggable-marker {
+          cursor: grab;
+        }
+        .draggable-marker:active {
+          cursor: grabbing;
+        }
       `}</style>
       <div
         ref={mapRef}
@@ -335,4 +435,6 @@ export function MapView({ courierLocation, order, markers, onMapClick }: MapView
       />
     </>
   );
-}
+});
+
+MapView.displayName = "MapView";

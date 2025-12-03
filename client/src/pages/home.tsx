@@ -11,6 +11,8 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Check, X } from "lucide-react";
 import type { Courier, Order, Marker } from "@shared/schema";
 
 export default function Home() {
@@ -20,12 +22,14 @@ export default function Home() {
   const [confirmDeliveryOpen, setConfirmDeliveryOpen] = useState(false);
   const [courierLocation, setCourierLocation] = useState<{ lat: number; lng: number } | null>(null);
   
-  // Marker dialogs
-  const [addRestaurantOpen, setAddRestaurantOpen] = useState(false);
-  const [addCustomerOpen, setAddCustomerOpen] = useState(false);
+  // Marker adding mode
+  const [addingMarkerType, setAddingMarkerType] = useState<"restaurant" | "customer" | null>(null);
+  const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [showMarkerDialog, setShowMarkerDialog] = useState(false);
+  
+  // Delete marker dialogs
   const [deleteRestaurantOpen, setDeleteRestaurantOpen] = useState(false);
   const [deleteCustomerOpen, setDeleteCustomerOpen] = useState(false);
-  const [mapClickCoords, setMapClickCoords] = useState<{ lat: number; lng: number } | null>(null);
   
   // Chat
   const [chatOpen, setChatOpen] = useState(false);
@@ -188,16 +192,33 @@ export default function Home() {
     };
   }, [courier?.isOnline]);
 
-  // Handle map click for adding markers
-  const handleMapClick = useCallback((lat: number, lng: number) => {
-    if (addRestaurantOpen || addCustomerOpen) {
-      setMapClickCoords({ lat, lng });
-    }
-  }, [addRestaurantOpen, addCustomerOpen]);
+  // Start adding marker mode
+  const startAddingMarker = (type: "restaurant" | "customer") => {
+    setAddingMarkerType(type);
+    setMarkerPosition(null);
+    setMenuOpen(false);
+  };
 
-  // Handle marker save
-  const handleSaveMarker = (type: "restaurant" | "customer") => (data: { name: string; address: string; lat: number; lng: number }) => {
-    createMarkerMutation.mutate({ type, ...data });
+  // Cancel adding marker
+  const cancelAddingMarker = () => {
+    setAddingMarkerType(null);
+    setMarkerPosition(null);
+  };
+
+  // Confirm marker position and show dialog
+  const confirmMarkerPosition = () => {
+    if (markerPosition) {
+      setShowMarkerDialog(true);
+    }
+  };
+
+  // Handle marker save from dialog
+  const handleSaveMarker = (data: { name: string; address: string; lat: number; lng: number }) => {
+    if (!addingMarkerType) return;
+    createMarkerMutation.mutate({ type: addingMarkerType, ...data });
+    setAddingMarkerType(null);
+    setMarkerPosition(null);
+    setShowMarkerDialog(false);
   };
 
   // Filter markers by type
@@ -220,18 +241,50 @@ export default function Home() {
           courierLocation={courierLocation}
           order={order || null}
           markers={markers}
-          onMapClick={handleMapClick}
+          draggableMarker={addingMarkerType ? {
+            type: addingMarkerType,
+            onPositionChange: (lat, lng) => setMarkerPosition({ lat, lng }),
+          } : null}
         />
       </div>
 
-      {/* Top Bar - higher z-index */}
-      <div className="relative z-30">
-        <TopBar
-          isOnline={courier?.isOnline || false}
-          onToggleStatus={() => toggleStatusMutation.mutate()}
-          onMenuClick={() => setMenuOpen(true)}
-        />
-      </div>
+      {/* Marker Adding Controls */}
+      {addingMarkerType && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-white rounded-xl shadow-lg px-4 py-3 flex items-center gap-3">
+          <span className="text-sm font-medium">
+            {addingMarkerType === "restaurant" ? "Перетащите метку заведения" : "Перетащите метку клиента"}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={cancelAddingMarker}
+              data-testid="button-cancel-marker-position"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              onClick={confirmMarkerPosition}
+              disabled={!markerPosition}
+              data-testid="button-confirm-marker-position"
+            >
+              <Check className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Top Bar - higher z-index (hidden when adding marker) */}
+      {!addingMarkerType && (
+        <div className="relative z-30">
+          <TopBar
+            isOnline={courier?.isOnline || false}
+            onToggleStatus={() => toggleStatusMutation.mutate()}
+            onMenuClick={() => setMenuOpen(true)}
+          />
+        </div>
+      )}
 
       {/* Navigation Button */}
       {order && order.status !== "delivered" && (
@@ -292,9 +345,9 @@ export default function Home() {
         <BurgerMenu
           isOpen={menuOpen}
           onClose={() => setMenuOpen(false)}
-          onAddRestaurantMarker={() => setAddRestaurantOpen(true)}
+          onAddRestaurantMarker={() => startAddingMarker("restaurant")}
           onRemoveRestaurantMarker={() => setDeleteRestaurantOpen(true)}
-          onAddCustomerMarker={() => setAddCustomerOpen(true)}
+          onAddCustomerMarker={() => startAddingMarker("customer")}
           onRemoveCustomerMarker={() => setDeleteCustomerOpen(true)}
         />
       </div>
@@ -309,23 +362,20 @@ export default function Home() {
           onConfirm={() => confirmDeliveryMutation.mutate()}
         />
 
-        {/* Marker Dialogs */}
+        {/* Marker Dialog for entering name after positioning */}
         <MarkerDialog
-          open={addRestaurantOpen}
-          onOpenChange={setAddRestaurantOpen}
-          type="restaurant"
-          lat={mapClickCoords?.lat}
-          lng={mapClickCoords?.lng}
-          onSave={handleSaveMarker("restaurant")}
-        />
-
-        <MarkerDialog
-          open={addCustomerOpen}
-          onOpenChange={setAddCustomerOpen}
-          type="customer"
-          lat={mapClickCoords?.lat}
-          lng={mapClickCoords?.lng}
-          onSave={handleSaveMarker("customer")}
+          open={showMarkerDialog}
+          onOpenChange={(open) => {
+            setShowMarkerDialog(open);
+            if (!open) {
+              setAddingMarkerType(null);
+              setMarkerPosition(null);
+            }
+          }}
+          type={addingMarkerType || "restaurant"}
+          lat={markerPosition?.lat}
+          lng={markerPosition?.lng}
+          onSave={handleSaveMarker}
         />
 
         <DeleteMarkerDialog

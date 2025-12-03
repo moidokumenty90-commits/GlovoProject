@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { MapPin, Check, X } from "lucide-react";
 
 interface MarkerDialogProps {
   open: boolean;
@@ -30,47 +31,54 @@ export function MarkerDialog({
 }: MarkerDialogProps) {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [latitude, setLatitude] = useState(lat?.toString() || "");
-  const [longitude, setLongitude] = useState(lng?.toString() || "");
+
+  useEffect(() => {
+    if (!open) {
+      setName("");
+      setAddress("");
+    }
+  }, [open]);
 
   const handleSave = () => {
-    if (!name.trim() || !latitude || !longitude) return;
+    if (!name.trim() || lat === undefined || lng === undefined) return;
 
     onSave({
       name: name.trim(),
       address: address.trim(),
-      lat: parseFloat(latitude),
-      lng: parseFloat(longitude),
+      lat,
+      lng,
     });
 
-    // Reset form
     setName("");
     setAddress("");
-    setLatitude("");
-    setLongitude("");
     onOpenChange(false);
   };
 
-  const title = type === "restaurant" ? "Добавить метку заведения" : "Добавить метку клиента";
+  const title = type === "restaurant" ? "Добавить заведение" : "Добавить клиента";
+  const placeholder = type === "restaurant" ? "Название заведения" : "Имя клиента";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <MapPin className={`w-5 h-5 ${type === "restaurant" ? "text-green-600" : "text-gray-700"}`} />
+            {title}
+          </DialogTitle>
           <DialogDescription>
-            Нажмите на карту, чтобы выбрать местоположение, или введите координаты вручную.
+            Перетащите метку на карте в нужное место
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Название</Label>
+            <Label htmlFor="name">Название *</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={type === "restaurant" ? "McDonald's" : "Имя клиента"}
+              placeholder={placeholder}
               data-testid="input-marker-name"
+              autoFocus
             />
           </div>
           <div className="space-y-2">
@@ -83,38 +91,22 @@ export function MarkerDialog({
               data-testid="input-marker-address"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="lat">Широта</Label>
-              <Input
-                id="lat"
-                type="number"
-                step="any"
-                value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
-                placeholder="48.4647"
-                data-testid="input-marker-lat"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lng">Долгота</Label>
-              <Input
-                id="lng"
-                type="number"
-                step="any"
-                value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
-                placeholder="35.0462"
-                data-testid="input-marker-lng"
-              />
-            </div>
-          </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            data-testid="button-cancel-marker"
+          >
+            <X className="w-4 h-4 mr-2" />
             Отмена
           </Button>
-          <Button onClick={handleSave} disabled={!name.trim() || !latitude || !longitude}>
+          <Button 
+            onClick={handleSave} 
+            disabled={!name.trim()}
+            data-testid="button-save-marker"
+          >
+            <Check className="w-4 h-4 mr-2" />
             Сохранить
           </Button>
         </DialogFooter>
@@ -160,6 +152,7 @@ export function DeleteMarkerDialog({
                   onDelete(marker.id);
                   onOpenChange(false);
                 }}
+                data-testid={`button-delete-marker-${marker.id}`}
               >
                 {marker.name}
               </Button>
