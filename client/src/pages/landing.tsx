@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin, Truck, Clock, Lock, User } from "lucide-react";
+import { MapPin, Clock, Lock, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import logoImage from "@assets/Без_названия_1764747745659.png";
 
 export default function Landing() {
   const [username, setUsername] = useState("");
@@ -57,9 +58,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="p-4 border-b flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <Truck className="w-5 h-5 text-primary-foreground" />
-          </div>
+          <img src={logoImage} alt="Логотип" className="w-10 h-10" />
           <span className="font-bold text-lg">Доставка</span>
         </div>
       </header>
@@ -67,9 +66,7 @@ export default function Landing() {
       <main className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center space-y-4">
-            <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-              <Truck className="w-10 h-10 text-primary" />
-            </div>
+            <img src={logoImage} alt="Логотип" className="w-20 h-20 mx-auto" />
             <h1 className="text-2xl font-bold" data-testid="text-landing-title">
               Система курьерской доставки
             </h1>
