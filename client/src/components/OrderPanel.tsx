@@ -499,6 +499,9 @@ export function OrderPanel({
             </p>
           )}
 
+          {/* Gray separator line after building info */}
+          <div className="h-px mx-4 mb-2" style={{ backgroundColor: "#D1D5DB" }} />
+
           <div className="px-4 py-4">
             <div className="text-3xl font-bold text-gray-900 mb-1 tracking-tight" data-testid="text-order-number">
               {order.orderNumber}
@@ -546,7 +549,8 @@ export function OrderPanel({
             )}
           </div>
 
-          <div className="h-px bg-gray-100 mx-4" />
+          {/* Gray separator line after products */}
+          <div className="h-px mx-4" style={{ backgroundColor: "#D1D5DB" }} />
 
           <div className="px-4 py-4">
             <p className="text-gray-400 text-sm mb-1">Оплата</p>
