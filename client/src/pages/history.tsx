@@ -84,10 +84,6 @@ export default function History() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
-      toast({
-        title: "Замовлення видалено",
-        description: "Замовлення успішно видалено з історії",
-      });
       setDeleteOrderId(null);
     },
     onError: () => {
