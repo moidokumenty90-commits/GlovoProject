@@ -290,6 +290,27 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  app.patch("/api/orders/:id/location", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { type, lat, lng } = req.body;
+      
+      if (!type || !lat || !lng) {
+        return res.status(400).json({ message: "Missing type, lat or lng" });
+      }
+      
+      const updateData = type === "restaurant" 
+        ? { restaurantLat: lat, restaurantLng: lng }
+        : { customerLat: lat, customerLng: lng };
+      
+      const order = await storage.updateOrder(id, updateData);
+      res.json(order);
+    } catch (error) {
+      console.error("Error updating order location:", error);
+      res.status(500).json({ message: "Failed to update order location" });
+    }
+  });
+
   app.delete("/api/orders/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;

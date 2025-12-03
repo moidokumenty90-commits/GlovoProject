@@ -11,6 +11,7 @@ interface MapViewProps {
     type: "restaurant" | "customer";
     onPositionChange: (lat: number, lng: number) => void;
   } | null;
+  onOrderLocationChange?: (type: "restaurant" | "customer", lat: number, lng: number) => void;
 }
 
 export interface MapViewRef {
@@ -23,6 +24,7 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
   order, 
   markers,
   draggableMarker,
+  onOrderLocationChange,
 }, ref) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -32,6 +34,7 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
   const routeLayerRef = useRef<L.Polyline | null>(null);
   const savedMarkersRef = useRef<L.Marker[]>([]);
   const draggableMarkerRef = useRef<L.Marker | null>(null);
+  const editingMarkerType = useRef<"restaurant" | "customer" | null>(null);
 
   const defaultCenter: [number, number] = [48.4647, 35.0462];
 
@@ -308,17 +311,47 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
     }
 
     if (order && order.status !== "delivered") {
+      const makeMarkerDraggable = (marker: L.Marker, type: "restaurant" | "customer") => {
+        if (editingMarkerType.current === type) return;
+        
+        editingMarkerType.current = type;
+        marker.dragging?.enable();
+        marker.setIcon(createDraggableIcon(type));
+        
+        marker.off("dragend");
+        marker.on("dragend", () => {
+          const pos = marker.getLatLng();
+          onOrderLocationChange?.(type, pos.lat, pos.lng);
+          
+          marker.dragging?.disable();
+          marker.setIcon(type === "restaurant" ? createRestaurantIcon() : createCustomerIcon());
+          editingMarkerType.current = null;
+        });
+      };
+
       restaurantMarkerRef.current = L.marker([order.restaurantLat, order.restaurantLng], {
         icon: createRestaurantIcon(),
       })
         .bindPopup(`<b>${order.restaurantName}</b><br>${order.restaurantAddress}`)
         .addTo(map);
+      
+      restaurantMarkerRef.current.on("dblclick", () => {
+        if (restaurantMarkerRef.current && onOrderLocationChange) {
+          makeMarkerDraggable(restaurantMarkerRef.current, "restaurant");
+        }
+      });
 
       customerMarkerRef.current = L.marker([order.customerLat, order.customerLng], {
         icon: createCustomerIcon(),
       })
         .bindPopup(`<b>${order.customerName}</b><br>${order.customerAddress}`)
         .addTo(map);
+      
+      customerMarkerRef.current.on("dblclick", () => {
+        if (customerMarkerRef.current && onOrderLocationChange) {
+          makeMarkerDraggable(customerMarkerRef.current, "customer");
+        }
+      });
 
       // Fit bounds to show all markers
       const points: L.LatLngExpression[] = [

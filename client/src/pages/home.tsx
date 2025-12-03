@@ -178,6 +178,34 @@ export default function Home() {
     },
   });
 
+  // Update order location mutation
+  const updateOrderLocationMutation = useMutation({
+    mutationFn: async ({ orderId, type, lat, lng }: { orderId: string; type: "restaurant" | "customer"; lat: number; lng: number }) => {
+      return await apiRequest("PATCH", `/api/orders/${orderId}/location`, { type, lat, lng });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
+      toast({
+        title: "Локация обновлена",
+        description: "Новое местоположение сохранено",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить локацию",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle order location change from map
+  const handleOrderLocationChange = useCallback((type: "restaurant" | "customer", lat: number, lng: number) => {
+    if (order) {
+      updateOrderLocationMutation.mutate({ orderId: order.id, type, lat, lng });
+    }
+  }, [order]);
+
   // Watch geolocation
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -264,6 +292,7 @@ export default function Home() {
             type: addingMarkerType,
             onPositionChange: (lat, lng) => setMarkerPosition({ lat, lng }),
           } : null}
+          onOrderLocationChange={handleOrderLocationChange}
         />
       </div>
 
