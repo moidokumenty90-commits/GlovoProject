@@ -89,6 +89,8 @@ export const orders = pgTable("orders", {
   restaurantAddress: text("restaurant_address").notNull(),
   restaurantLat: doublePrecision("restaurant_lat").notNull(),
   restaurantLng: doublePrecision("restaurant_lng").notNull(),
+  restaurantCompany: text("restaurant_company"), // Company name (e.g., "VARUS")
+  restaurantComment: text("restaurant_comment"), // Pickup instructions
   
   // Customer info
   customerName: text("customer_name").notNull(),
@@ -100,6 +102,7 @@ export const orders = pgTable("orders", {
   houseNumber: text("house_number"),
   apartment: text("apartment"),
   floor: text("floor"),
+  buildingInfo: text("building_info"), // Building info (e.g., "Здание: Пологовий стаціонар")
   
   // Order details
   items: jsonb("items").$type<OrderItem[]>().notNull().default([]),
@@ -110,6 +113,9 @@ export const orders = pgTable("orders", {
   
   // Status: new, accepted, in_transit, delivered
   status: text("status").notNull().default("new"),
+  
+  // Grouping for multi-order pickup
+  pickupGroupId: text("pickup_group_id"), // Groups orders from same restaurant
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
