@@ -27,7 +27,7 @@ export function TopBar({
       {/* Status Badge - Center (Glovo style) */}
       <button
         onClick={onToggleStatus}
-        className={`relative flex flex-col items-center px-5 py-2 rounded-full shadow-sm overflow-hidden ${
+        className={`relative flex flex-col items-center px-5 py-2 rounded-full shadow-sm ${
           isOnline
             ? "bg-white border border-gray-200"
             : "bg-white border-2 border-teal-400"
@@ -35,17 +35,14 @@ export function TopBar({
         data-testid="button-toggle-status"
       >
         {isOnline && (
-          <div 
-            className="absolute -top-1 -right-1 w-8 h-8 bg-green-500 rounded-full"
-            style={{ transform: 'translate(30%, -30%)' }}
-          />
+          <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
         )}
         {isOnline ? (
           <>
-            <span className="text-[10px] text-gray-400 font-medium relative z-10">
+            <span className="text-[10px] text-gray-400 font-medium">
               Статус
             </span>
-            <span className="font-semibold text-sm text-gray-800 relative z-10">
+            <span className="font-semibold text-sm text-gray-800">
               Онлайн
             </span>
           </>
