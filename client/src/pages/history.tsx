@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { ArrowLeft, Filter, Search, Package, Trash2 } from "lucide-react";
+import { ArrowLeft, Filter, Search, Package, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -22,6 +23,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { OrderStatusBadge } from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +43,23 @@ export default function History() {
   const [customerSearch, setCustomerSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+  const [editOrder, setEditOrder] = useState<Order | null>(null);
+  
+  const [editForm, setEditForm] = useState({
+    orderNumber: "",
+    customerName: "",
+    customerPhone: "",
+    customerAddress: "",
+    houseNumber: "",
+    apartment: "",
+    floor: "",
+    restaurantName: "",
+    restaurantAddress: "",
+    totalPrice: "",
+    paymentMethod: "card",
+    comment: "",
+    status: "new",
+  });
 
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders/history", statusFilter, customerSearch],
@@ -60,22 +85,44 @@ export default function History() {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
       toast({
-        title: "Заказ удалён",
-        description: "Заказ успешно удалён из истории",
+        title: "Замовлення видалено",
+        description: "Замовлення успішно видалено з історії",
       });
       setDeleteOrderId(null);
     },
     onError: () => {
       toast({
-        title: "Ошибка",
-        description: "Не удалось удалить заказ",
+        title: "Помилка",
+        description: "Не вдалося видалити замовлення",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateOrderMutation = useMutation({
+    mutationFn: async (data: { id: string; updates: Partial<Order> }) => {
+      return await apiRequest("PATCH", `/api/orders/${data.id}`, data.updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
+      toast({
+        title: "Замовлення оновлено",
+        description: "Зміни успішно збережено",
+      });
+      setEditOrder(null);
+    },
+    onError: () => {
+      toast({
+        title: "Помилка",
+        description: "Не вдалося оновити замовлення",
         variant: "destructive",
       });
     },
   });
 
   const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString("ru-RU", {
+    return new Date(date).toLocaleDateString("uk-UA", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -88,10 +135,52 @@ export default function History() {
     setDeleteOrderId(orderId);
   };
 
+  const handleEditClick = (order: Order) => {
+    setEditForm({
+      orderNumber: order.orderNumber || "",
+      customerName: order.customerName || "",
+      customerPhone: order.customerPhone || "",
+      customerAddress: order.customerAddress || "",
+      houseNumber: order.houseNumber || "",
+      apartment: order.apartment || "",
+      floor: order.floor || "",
+      restaurantName: order.restaurantName || "",
+      restaurantAddress: order.restaurantAddress || "",
+      totalPrice: order.totalPrice?.toString() || "0",
+      paymentMethod: order.paymentMethod || "card",
+      comment: order.comment || "",
+      status: order.status || "new",
+    });
+    setEditOrder(order);
+  };
+
   const confirmDelete = () => {
     if (deleteOrderId) {
       deleteOrderMutation.mutate(deleteOrderId);
     }
+  };
+
+  const handleSaveEdit = () => {
+    if (!editOrder) return;
+    
+    updateOrderMutation.mutate({
+      id: editOrder.id,
+      updates: {
+        orderNumber: editForm.orderNumber,
+        customerName: editForm.customerName,
+        customerPhone: editForm.customerPhone,
+        customerAddress: editForm.customerAddress,
+        houseNumber: editForm.houseNumber,
+        apartment: editForm.apartment,
+        floor: editForm.floor,
+        restaurantName: editForm.restaurantName,
+        restaurantAddress: editForm.restaurantAddress,
+        totalPrice: parseFloat(editForm.totalPrice) || 0,
+        paymentMethod: editForm.paymentMethod,
+        comment: editForm.comment,
+        status: editForm.status,
+      },
+    });
   };
 
   return (
@@ -180,6 +269,13 @@ export default function History() {
                         {order.totalPrice.toFixed(2)} ₴
                       </p>
                       <button
+                        onClick={() => handleEditClick(order)}
+                        className="w-10 h-10 rounded-full border-2 border-blue-200 flex items-center justify-center hover:bg-blue-50 transition-colors"
+                        data-testid={`button-edit-order-${order.id}`}
+                      >
+                        <Pencil className="w-4 h-4 text-blue-500" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteClick(order.id)}
                         className="w-10 h-10 rounded-full border-2 border-red-200 flex items-center justify-center hover:bg-red-50 transition-colors"
                         data-testid={`button-delete-order-${order.id}`}
@@ -191,15 +287,15 @@ export default function History() {
 
                   <div className="space-y-2 text-sm">
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground shrink-0">Клиент:</span>
+                      <span className="text-muted-foreground shrink-0">Клієнт:</span>
                       <span className="font-medium truncate">{order.customerName}</span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground shrink-0">Адрес:</span>
+                      <span className="text-muted-foreground shrink-0">Адреса:</span>
                       <span className="truncate">{order.customerAddress}</span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground shrink-0">Ресторан:</span>
+                      <span className="text-muted-foreground shrink-0">Магазин:</span>
                       <span className="truncate">{order.restaurantName}</span>
                     </div>
                   </div>
@@ -214,23 +310,198 @@ export default function History() {
       <AlertDialog open={!!deleteOrderId} onOpenChange={(open) => !open && setDeleteOrderId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить заказ?</AlertDialogTitle>
+            <AlertDialogTitle>Видалити замовлення?</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.
+              Ви впевнені, що хочете видалити це замовлення? Цю дію неможливо скасувати.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-delete">Отмена</AlertDialogCancel>
+            <AlertDialogCancel data-testid="button-cancel-delete">Скасувати</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
               className="bg-red-500 hover:bg-red-600"
               data-testid="button-confirm-delete"
             >
-              Удалить
+              Видалити
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Order Dialog */}
+      <Dialog open={!!editOrder} onOpenChange={(open) => !open && setEditOrder(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Редагувати замовлення</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="orderNumber">Номер замовлення</Label>
+              <Input
+                id="orderNumber"
+                value={editForm.orderNumber}
+                onChange={(e) => setEditForm({ ...editForm, orderNumber: e.target.value })}
+                data-testid="input-edit-order-number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Статус</Label>
+              <Select 
+                value={editForm.status} 
+                onValueChange={(val) => setEditForm({ ...editForm, status: val })}
+              >
+                <SelectTrigger data-testid="select-edit-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">Новий</SelectItem>
+                  <SelectItem value="accepted">Прийнято</SelectItem>
+                  <SelectItem value="in_transit">В дорозі</SelectItem>
+                  <SelectItem value="delivered">Доставлено</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customerName">Ім'я клієнта</Label>
+              <Input
+                id="customerName"
+                value={editForm.customerName}
+                onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
+                data-testid="input-edit-customer-name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customerPhone">Телефон</Label>
+              <Input
+                id="customerPhone"
+                value={editForm.customerPhone}
+                onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })}
+                data-testid="input-edit-customer-phone"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customerAddress">Адреса доставки</Label>
+              <Input
+                id="customerAddress"
+                value={editForm.customerAddress}
+                onChange={(e) => setEditForm({ ...editForm, customerAddress: e.target.value })}
+                data-testid="input-edit-customer-address"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-2">
+                <Label htmlFor="houseNumber">Будинок</Label>
+                <Input
+                  id="houseNumber"
+                  value={editForm.houseNumber}
+                  onChange={(e) => setEditForm({ ...editForm, houseNumber: e.target.value })}
+                  data-testid="input-edit-house-number"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="apartment">Квартира</Label>
+                <Input
+                  id="apartment"
+                  value={editForm.apartment}
+                  onChange={(e) => setEditForm({ ...editForm, apartment: e.target.value })}
+                  data-testid="input-edit-apartment"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="floor">Поверх</Label>
+                <Input
+                  id="floor"
+                  value={editForm.floor}
+                  onChange={(e) => setEditForm({ ...editForm, floor: e.target.value })}
+                  data-testid="input-edit-floor"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantName">Назва магазину</Label>
+              <Input
+                id="restaurantName"
+                value={editForm.restaurantName}
+                onChange={(e) => setEditForm({ ...editForm, restaurantName: e.target.value })}
+                data-testid="input-edit-restaurant-name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurantAddress">Адреса магазину</Label>
+              <Input
+                id="restaurantAddress"
+                value={editForm.restaurantAddress}
+                onChange={(e) => setEditForm({ ...editForm, restaurantAddress: e.target.value })}
+                data-testid="input-edit-restaurant-address"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="totalPrice">Сума (₴)</Label>
+              <Input
+                id="totalPrice"
+                type="number"
+                step="0.01"
+                value={editForm.totalPrice}
+                onChange={(e) => setEditForm({ ...editForm, totalPrice: e.target.value })}
+                data-testid="input-edit-total-price"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="paymentMethod">Спосіб оплати</Label>
+              <Select 
+                value={editForm.paymentMethod} 
+                onValueChange={(val) => setEditForm({ ...editForm, paymentMethod: val })}
+              >
+                <SelectTrigger data-testid="select-edit-payment-method">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="card">Онлайн</SelectItem>
+                  <SelectItem value="cash">Готівка</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="comment">Коментар</Label>
+              <Input
+                id="comment"
+                value={editForm.comment}
+                onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })}
+                data-testid="input-edit-comment"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setEditOrder(null)}
+              data-testid="button-cancel-edit"
+            >
+              Скасувати
+            </Button>
+            <Button 
+              onClick={handleSaveEdit}
+              disabled={updateOrderMutation.isPending}
+              className="bg-black hover:bg-gray-800"
+              data-testid="button-save-edit"
+            >
+              {updateOrderMutation.isPending ? "Збереження..." : "Зберегти"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
