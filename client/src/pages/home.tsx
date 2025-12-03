@@ -147,6 +147,28 @@ export default function Home() {
     },
   });
 
+  // Delete order mutation
+  const deleteOrderMutation = useMutation({
+    mutationFn: async () => {
+      if (!order) return;
+      return await apiRequest("DELETE", `/api/orders/${order.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
+      toast({
+        title: "Заказ удалён",
+        description: "Заказ успешно удалён",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить заказ",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete marker mutation
   const deleteMarkerMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -326,6 +348,7 @@ export default function Home() {
             onAccept={() => acceptOrderMutation.mutate()}
             onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
             onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
+            onDelete={() => deleteOrderMutation.mutate()}
             onOpenChat={() => setChatOpen(true)}
           />
         </div>

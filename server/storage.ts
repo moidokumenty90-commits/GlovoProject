@@ -270,6 +270,11 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async deleteOrder(id: string): Promise<boolean> {
+    const result = await db.delete(orders).where(eq(orders.id, id)).returning();
+    return result.length > 0;
+  }
+
   // Marker operations
   async getMarkers(courierId: string): Promise<Marker[]> {
     return await db.select().from(markers).where(eq(markers.courierId, courierId));
