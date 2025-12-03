@@ -1,4 +1,3 @@
-import { Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavigationButtonProps {
@@ -17,20 +16,16 @@ export function NavigationButton({
   className,
 }: NavigationButtonProps) {
   const handleNavigate = () => {
-    // Build Google Maps navigation URL
     let url = "https://www.google.com/maps/dir/";
     
-    // If we have restaurant coordinates, start there
     if (restaurantLat && restaurantLng) {
       url += `${restaurantLat},${restaurantLng}/`;
     }
     
-    // Add customer destination
     if (customerLat && customerLng) {
       url += `${customerLat},${customerLng}`;
     }
 
-    // Open in new tab or app
     window.open(url, "_blank");
   };
 
@@ -41,17 +36,27 @@ export function NavigationButton({
       onClick={handleNavigate}
       disabled={isDisabled}
       className={cn(
-        "w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center transition-all",
+        "w-12 h-12 rounded-xl bg-green-500 shadow-lg flex items-center justify-center transition-all",
         isDisabled 
           ? "opacity-50 cursor-not-allowed" 
-          : "hover:bg-gray-50 active:scale-95",
+          : "hover:bg-green-600 active:scale-95",
         className
       )}
       data-testid="button-navigation"
     >
-      <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
-        <Navigation className="w-5 h-5 text-white" />
-      </div>
+      {/* Diamond/Compass Arrow Icon */}
+      <svg 
+        width="24" 
+        height="24" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        className="text-white"
+      >
+        <path 
+          d="M12 2L19 12L12 22L5 12L12 2Z" 
+          fill="currentColor"
+        />
+      </svg>
     </button>
   );
 }

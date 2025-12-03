@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Phone, MessageCircle, ChevronUp, ChevronDown, CheckCircle } from "lucide-react";
+import { Phone, MessageSquare, ChevronUp, ChevronDown, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { OrderStatusBadge } from "./StatusBadge";
-import { ChatButton } from "./ChatPanel";
 import type { Order, OrderItem } from "@shared/schema";
 
 interface OrderPanelProps {
@@ -34,12 +32,6 @@ export function OrderPanel({
   const items = (order.items as OrderItem[]) || [];
   const totalItems = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
-  const getPaymentLabel = () => {
-    if (order.paymentMethod === "card") return "Безнал";
-    if (order.needsChange) return "Получите наличные от клиента (Клиент запросил сдачу)";
-    return "Получить наличные";
-  };
-
   const handleCall = () => {
     if (order.customerPhone) {
       window.location.href = `tel:${order.customerPhone}`;
@@ -50,11 +42,18 @@ export function OrderPanel({
     onOpenChat?.();
   };
 
+  // Format address with all details
+  const formatAddress = () => {
+    let addr = order.customerAddress;
+    if (order.houseNumber) addr += `, ${order.houseNumber}`;
+    return addr;
+  };
+
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 bg-background rounded-t-3xl shadow-2xl z-30 transition-all duration-300",
-        isExpanded ? "max-h-[80vh]" : "max-h-40"
+        "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300",
+        isExpanded ? "max-h-[85vh]" : "max-h-[45vh]"
       )}
       data-testid="order-panel"
     >
@@ -64,141 +63,146 @@ export function OrderPanel({
         className="w-full py-3 flex items-center justify-center cursor-pointer"
         data-testid="button-toggle-panel"
       >
-        <div className="w-12 h-1 bg-gray-300 rounded-full" />
+        <div className="w-10 h-1 bg-gray-300 rounded-full" />
       </button>
 
-      <div className="overflow-y-auto" style={{ maxHeight: isExpanded ? 'calc(80vh - 60px)' : 'calc(40vh - 60px)' }}>
-        <div className="px-6 pb-6 space-y-4">
-          {/* Customer Info Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold truncate" data-testid="text-customer-name">
-                {order.customerName}
-              </h2>
-              <p className="text-sm text-muted-foreground" data-testid="text-customer-address">
-                {order.customerAddress}
-                {order.houseNumber && `, д. ${order.houseNumber}`}
-              </p>
-              {(order.apartment || order.floor) && (
-                <p className="text-sm text-muted-foreground">
-                  {order.apartment && `Номер квартиры: ${order.apartment}`}
-                  {order.apartment && order.floor && " • "}
-                  {order.floor && `Этаж: ${order.floor}`}
-                </p>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2 shrink-0">
-              <button
-                onClick={handleCall}
-                className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition-colors"
-                data-testid="button-call"
-              >
-                <Phone className="w-5 h-5" />
-              </button>
-              {order.id && (
-                <ChatButton orderId={order.id} onClick={handleOpenChat} />
-              )}
-            </div>
+      <div 
+        className="overflow-y-auto px-5 pb-6" 
+        style={{ maxHeight: isExpanded ? 'calc(85vh - 50px)' : 'calc(45vh - 50px)' }}
+      >
+        {/* Customer Name + Action Buttons Row */}
+        <div className="flex items-start justify-between mb-1">
+          <h2 className="text-xl font-bold text-gray-900" data-testid="text-customer-name">
+            {order.customerName}
+          </h2>
+          
+          {/* Call and Chat Buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCall}
+              className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center"
+              data-testid="button-call"
+            >
+              <Phone className="w-5 h-5 text-gray-600" />
+            </button>
+            <button
+              onClick={handleOpenChat}
+              className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center"
+              data-testid="button-chat"
+            >
+              <MessageSquare className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
+        </div>
 
-          {/* Expand indicator */}
-          <button
-            onClick={onToggleExpand}
-            className="flex items-center justify-center w-full text-muted-foreground"
-            data-testid="button-expand"
-          >
-            {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
-          </button>
+        {/* Address */}
+        <p className="text-gray-600 text-sm mb-1" data-testid="text-customer-address">
+          {formatAddress()}
+        </p>
 
-          {/* Expanded Content */}
-          {isExpanded && (
-            <>
-              {/* Order Number */}
-              <div className="text-2xl font-bold" data-testid="text-order-number">
-                {order.orderNumber}
-              </div>
+        {/* Floor/Apartment info */}
+        {order.floor && (
+          <p className="text-gray-500 text-sm mb-4">
+            Этаж: {order.floor}
+            {order.apartment && ` • Кв: ${order.apartment}`}
+          </p>
+        )}
 
-              {/* Order Info */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-muted-foreground">
-                  #{order.orderNumber.slice(-3)} • {order.customerName}
+        {/* Divider */}
+        <div className="border-t border-gray-100 my-4" />
+
+        {/* Large Order Number */}
+        <div className="text-3xl font-bold text-gray-900 mb-2" data-testid="text-order-number">
+          {order.orderNumber}
+        </div>
+
+        {/* Order Info Line */}
+        <p className="text-gray-500 text-sm mb-1">
+          #{order.orderNumber.slice(-3)} · {order.customerName}
+        </p>
+
+        {/* Restaurant Name */}
+        <h3 className="font-semibold text-gray-900 mb-4" data-testid="text-restaurant-name">
+          {order.restaurantName}
+        </h3>
+
+        {/* Products Toggle */}
+        <button
+          onClick={() => setShowItems(!showItems)}
+          className="flex items-center gap-1 text-green-600 font-medium text-sm mb-3"
+          data-testid="button-toggle-items"
+        >
+          <span>{totalItems} прод.</span>
+          {showItems ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronUp className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Order Items List */}
+        {showItems && items.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {items.map((item, index) => (
+              <div key={index} className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-start gap-2">
+                    <span className="text-gray-900 font-medium">{item.quantity || 1}</span>
+                    <div>
+                      <span className="text-gray-900">{item.name}</span>
+                      {item.modifiers && (
+                        <p className="text-gray-500 text-sm">+ {item.modifiers}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <span className="text-gray-900 font-medium whitespace-nowrap ml-4">
+                  {item.price.toFixed(2)} ₴
                 </span>
               </div>
-
-              {/* Restaurant */}
-              <div>
-                <h3 className="font-semibold" data-testid="text-restaurant-name">
-                  {order.restaurantName}
-                </h3>
-              </div>
-
-              {/* Order Items Toggle */}
-              <button
-                onClick={() => setShowItems(!showItems)}
-                className="flex items-center gap-2 text-green-600 font-medium"
-                data-testid="button-toggle-items"
-              >
-                <span>{totalItems} прод.</span>
-                {showItems ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-
-              {/* Order Items List */}
-              {showItems && items.length > 0 && (
-                <div className="space-y-3 border-t pt-3">
-                  {items.map((item, index) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <div className="flex-1">
-                        <span className="font-medium">{item.quantity || 1}</span>
-                        <span className="ml-2">{item.name}</span>
-                        {item.modifiers && (
-                          <p className="text-muted-foreground text-xs mt-1">{item.modifiers}</p>
-                        )}
-                      </div>
-                      <span className="font-semibold whitespace-nowrap">
-                        {item.price.toFixed(2)} ₴
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Payment Info */}
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Оплата</span>
-                  <span className="font-medium">{getPaymentLabel()}</span>
-                </div>
-              </div>
-
-              {/* Total */}
-              <div className="flex items-center gap-2 py-4 border-t">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span className="text-muted-foreground">Общая сумма платежа</span>
-              </div>
-              <div className="text-3xl font-bold" data-testid="text-order-total">
-                {order.totalPrice.toFixed(2)} ₴
-              </div>
-
-              {/* Comment */}
-              {order.comment && (
-                <div className="bg-muted p-3 rounded-lg">
-                  <p className="text-sm text-muted-foreground">{order.comment}</p>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Status Badge */}
-          <div className="flex items-center gap-2">
-            <OrderStatusBadge status={order.status} />
+            ))}
           </div>
+        )}
 
-          {/* Action Buttons */}
+        {/* Payment Info - only when expanded */}
+        {isExpanded && (
+          <>
+            <div className="border-t border-gray-100 pt-4 mb-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Способ оплаты</span>
+                <span className="font-medium text-gray-900">
+                  {order.paymentMethod === "card" ? "Безнал" : "Наличные"}
+                </span>
+              </div>
+              {order.needsChange && order.paymentMethod === "cash" && (
+                <p className="text-orange-500 text-sm mt-1">Клиент запросил сдачу</p>
+              )}
+            </div>
+
+            {/* Total */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Сумма к оплате</span>
+                <span className="text-2xl font-bold text-gray-900" data-testid="text-order-total">
+                  {order.totalPrice.toFixed(2)} ₴
+                </span>
+              </div>
+            </div>
+
+            {/* Comment */}
+            {order.comment && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+                <p className="text-sm text-gray-700">{order.comment}</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Action Buttons */}
+        <div className="mt-4">
           {order.status === "new" && (
             <Button
-              className="w-full h-14 rounded-xl text-base font-semibold bg-green-500 hover:bg-green-600"
+              className="w-full h-14 rounded-xl text-base font-semibold bg-green-500 hover:bg-green-600 text-white"
               onClick={onAccept}
               data-testid="button-accept-order"
             >
@@ -208,17 +212,18 @@ export function OrderPanel({
 
           {order.status === "accepted" && (
             <Button
-              className="w-full h-14 rounded-xl text-base font-semibold bg-blue-500 hover:bg-blue-600"
+              className="w-full h-14 rounded-xl text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white"
               onClick={() => onStatusChange?.("in_transit")}
               data-testid="button-start-delivery"
             >
+              <Navigation className="w-5 h-5 mr-2" />
               Начать доставку
             </Button>
           )}
 
           {order.status === "in_transit" && (
             <Button
-              className="w-full h-14 rounded-xl text-base font-semibold bg-black hover:bg-gray-900"
+              className="w-full h-14 rounded-xl text-base font-semibold bg-gray-900 hover:bg-gray-800 text-white"
               onClick={onConfirmDelivery}
               data-testid="button-confirm-delivery"
             >
