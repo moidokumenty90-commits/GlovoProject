@@ -1,4 +1,4 @@
-import { X, Plus, Settings, MapPin, Trash2, User, LogOut, History, TrendingUp, Move } from "lucide-react";
+import { X, Plus, Settings, MapPin, Trash2, User, LogOut, History, TrendingUp, Move, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +11,7 @@ interface BurgerMenuProps {
   onAddCustomerMarker?: () => void;
   onRemoveCustomerMarker?: () => void;
   onEditMarkers?: () => void;
+  onAddTestOrder?: () => void;
 }
 
 export function BurgerMenu({
@@ -21,6 +22,7 @@ export function BurgerMenu({
   onAddCustomerMarker,
   onRemoveCustomerMarker,
   onEditMarkers,
+  onAddTestOrder,
 }: BurgerMenuProps) {
   const [location] = useLocation();
   const { logout, isLoggingOut } = useAuth();
@@ -181,6 +183,18 @@ export function BurgerMenu({
           </div>
 
           <div className="border-t mt-auto">
+            <button
+              onClick={() => {
+                onAddTestOrder?.();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left text-orange-500"
+              data-testid="button-add-test-order"
+            >
+              <FlaskConical className="w-5 h-5" />
+              <span className="text-base font-medium">Добавить тестовый заказ</span>
+            </button>
+            
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}

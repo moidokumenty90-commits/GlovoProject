@@ -155,6 +155,43 @@ export default function Home() {
     },
   });
 
+  // Create test order mutation
+  const createTestOrderMutation = useMutation({
+    mutationFn: async () => {
+      const testOrder = {
+        orderNumber: String(Math.floor(Math.random() * 900) + 100),
+        restaurantName: "Сільпо",
+        restaurantAddress: "Старокозацька 7",
+        restaurantLat: 48.4608,
+        restaurantLng: 35.0393,
+        restaurantCompany: "Сільпо",
+        restaurantComment: "",
+        customerName: "Тестовий клієнт",
+        customerId: "test_" + Date.now(),
+        customerPhone: "+380991234567",
+        customerAddress: "Титова 21",
+        customerLat: 48.4562,
+        customerLng: 35.0549,
+        houseNumber: "21",
+        apartment: "45",
+        floor: "5",
+        buildingInfo: "",
+        items: [
+          { name: "Хліб", price: 25, quantity: 1 },
+          { name: "Молоко", price: 45, quantity: 2 },
+        ],
+        totalPrice: 115,
+        paymentMethod: "card",
+        needsChange: false,
+        comment: "",
+      };
+      return await apiRequest("POST", "/api/orders", testOrder);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
+    },
+  });
+
   // Update marker position mutation
   const updateMarkerPositionMutation = useMutation({
     mutationFn: async ({ id, lat, lng }: { id: string; lat: number; lng: number }) => {
@@ -464,6 +501,7 @@ export default function Home() {
           onAddCustomerMarker={() => startAddingMarker("customer")}
           onRemoveCustomerMarker={() => setDeleteCustomerOpen(true)}
           onEditMarkers={() => setEditMarkersMode(true)}
+          onAddTestOrder={() => createTestOrderMutation.mutate()}
         />
       </div>
 
