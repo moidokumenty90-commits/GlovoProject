@@ -31,6 +31,7 @@ export default function Home() {
   // Edit markers mode
   const [editMarkersMode, setEditMarkersMode] = useState(false);
   const [pendingMarkerChanges, setPendingMarkerChanges] = useState<Map<string, { lat: number; lng: number }>>(new Map());
+  const [pendingOrderChanges, setPendingOrderChanges] = useState<{ restaurant?: { lat: number; lng: number }; customer?: { lat: number; lng: number } }>({});
   
   // Delete marker dialogs
   const [deleteRestaurantOpen, setDeleteRestaurantOpen] = useState(false);
@@ -175,17 +176,41 @@ export default function Home() {
 
   // Confirm edit markers - save all changes
   const confirmEditMarkers = async () => {
-    const promises = Array.from(pendingMarkerChanges.entries()).map(([id, pos]) =>
-      updateMarkerPositionMutation.mutateAsync({ id, lat: pos.lat, lng: pos.lng })
-    );
+    const promises: Promise<any>[] = [];
+    
+    // Save saved marker changes
+    Array.from(pendingMarkerChanges.entries()).forEach(([id, pos]) => {
+      promises.push(updateMarkerPositionMutation.mutateAsync({ id, lat: pos.lat, lng: pos.lng }));
+    });
+    
+    // Save order marker changes
+    if (order && pendingOrderChanges.restaurant) {
+      promises.push(updateOrderLocationMutation.mutateAsync({ 
+        orderId: order.id, 
+        type: "restaurant", 
+        lat: pendingOrderChanges.restaurant.lat, 
+        lng: pendingOrderChanges.restaurant.lng 
+      }));
+    }
+    if (order && pendingOrderChanges.customer) {
+      promises.push(updateOrderLocationMutation.mutateAsync({ 
+        orderId: order.id, 
+        type: "customer", 
+        lat: pendingOrderChanges.customer.lat, 
+        lng: pendingOrderChanges.customer.lng 
+      }));
+    }
+    
     await Promise.all(promises);
     setPendingMarkerChanges(new Map());
+    setPendingOrderChanges({});
     setEditMarkersMode(false);
   };
 
   // Cancel edit markers - discard changes
   const cancelEditMarkers = () => {
     setPendingMarkerChanges(new Map());
+    setPendingOrderChanges({});
     setEditMarkersMode(false);
   };
 
@@ -201,10 +226,17 @@ export default function Home() {
 
   // Handle order location change from map
   const handleOrderLocationChange = useCallback((type: "restaurant" | "customer", lat: number, lng: number) => {
-    if (order) {
+    if (editMarkersMode) {
+      // In edit mode, store pending changes
+      setPendingOrderChanges(prev => ({
+        ...prev,
+        [type]: { lat, lng }
+      }));
+    } else if (order) {
+      // Normal mode - save immediately
       updateOrderLocationMutation.mutate({ orderId: order.id, type, lat, lng });
     }
-  }, [order]);
+  }, [order, editMarkersMode]);
 
   // Watch geolocation
   useEffect(() => {

@@ -38,7 +38,6 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
   const routeLayerRef = useRef<L.Polyline | null>(null);
   const savedMarkersRef = useRef<L.Marker[]>([]);
   const draggableMarkerRef = useRef<L.Marker | null>(null);
-  const editingMarkerType = useRef<"restaurant" | "customer" | null>(null);
 
   const defaultCenter: [number, number] = [48.4647, 35.0462];
 
@@ -315,44 +314,44 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
     }
 
     if (order && order.status !== "delivered") {
-      const makeMarkerDraggable = (marker: L.Marker, type: "restaurant" | "customer") => {
-        if (editingMarkerType.current === type) return;
-        
-        editingMarkerType.current = type;
-        marker.dragging?.enable();
-        marker.setIcon(createDraggableIcon(type));
-        
-        marker.off("dragend");
-        marker.on("dragend", () => {
-          const pos = marker.getLatLng();
-          onOrderLocationChange?.(type, pos.lat, pos.lng);
-          
-          marker.dragging?.disable();
-          marker.setIcon(type === "restaurant" ? createRestaurantIcon() : createCustomerIcon());
-          editingMarkerType.current = null;
-        });
-      };
-
       restaurantMarkerRef.current = L.marker([order.restaurantLat, order.restaurantLng], {
-        icon: createRestaurantIcon(),
+        icon: editMarkersMode ? createDraggableIcon("restaurant") : createRestaurantIcon(),
+        draggable: editMarkersMode || false,
       }).addTo(map);
+
+      if (editMarkersMode && onOrderLocationChange) {
+        restaurantMarkerRef.current.on("dragend", () => {
+          const pos = restaurantMarkerRef.current!.getLatLng();
+          onOrderLocationChange("restaurant", pos.lat, pos.lng);
+        });
+      }
 
       customerMarkerRef.current = L.marker([order.customerLat, order.customerLng], {
-        icon: createCustomerIcon(),
+        icon: editMarkersMode ? createDraggableIcon("customer") : createCustomerIcon(),
+        draggable: editMarkersMode || false,
       }).addTo(map);
 
-      // Fit bounds to show all markers
-      const points: L.LatLngExpression[] = [
-        [order.restaurantLat, order.restaurantLng],
-        [order.customerLat, order.customerLng],
-      ];
-      if (courierLocation) {
-        points.push([courierLocation.lat, courierLocation.lng]);
+      if (editMarkersMode && onOrderLocationChange) {
+        customerMarkerRef.current.on("dragend", () => {
+          const pos = customerMarkerRef.current!.getLatLng();
+          onOrderLocationChange("customer", pos.lat, pos.lng);
+        });
       }
-      const bounds = L.latLngBounds(points);
-      map.fitBounds(bounds, { padding: [50, 50] });
+
+      // Fit bounds to show all markers (only on initial load, not during edit mode)
+      if (!editMarkersMode) {
+        const points: L.LatLngExpression[] = [
+          [order.restaurantLat, order.restaurantLng],
+          [order.customerLat, order.customerLng],
+        ];
+        if (courierLocation) {
+          points.push([courierLocation.lat, courierLocation.lng]);
+        }
+        const bounds = L.latLngBounds(points);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
     }
-  }, [order, courierLocation]);
+  }, [order, courierLocation, editMarkersMode, onOrderLocationChange]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
