@@ -1,4 +1,4 @@
-const CACHE_NAME = 'glovo-courier-v1';
+const CACHE_NAME = 'glovo-courier-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',

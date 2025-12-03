@@ -340,9 +340,10 @@
 }
 
 /* PWA Standalone Mode */
-@media all and (display-mode: standalone) {
-  body {
-    padding-top: env(safe-area-inset-top);
+@media all and (display-mode: standalone), (display-mode: fullscreen) {
+  html, body {
+    height: 100%;
+    width: 100%;
   }
 }
 

@@ -14,7 +14,7 @@ export function TopBar({
   onSupportClick,
 }: TopBarProps) {
   return (
-    <div className="absolute top-4 left-0 right-0 z-20 flex items-center justify-between px-4">
+    <div className="absolute left-0 right-0 z-20 flex items-center justify-between px-4 safe-top" style={{ top: 'max(1rem, env(safe-area-inset-top))' }}>
       {/* Menu Button - Left */}
       <button
         onClick={onMenuClick}
