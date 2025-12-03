@@ -228,7 +228,7 @@ export function OrderPanel({
             </div>
 
             {/* Position 3: Order info */}
-            <p className="text-gray-600 text-base mb-6">
+            <p className="text-gray-600 text-base mb-6 font-bold">
               {selectedOrder.orderNumber} - #{getShortOrderNum(selectedOrder)} - {selectedOrder.customerName}
             </p>
 
@@ -385,7 +385,7 @@ export function OrderPanel({
                         </span>
                         <ExternalLink className="w-3.5 h-3.5" style={{ color: "#00A082" }} />
                       </div>
-                      <p className="text-gray-500 text-xs">
+                      <p className="text-gray-500 text-xs font-bold">
                         {order.orderNumber} - #{getShortOrderNum(order)} - {order.customerName}
                       </p>
                     </div>
