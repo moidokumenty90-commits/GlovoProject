@@ -120,7 +120,7 @@ export function OrderPanel({
 
   const getOrderStatusLabel = (status: string) => {
     switch (status) {
-      case "new": return "Новий";
+      case "new": return "Готов";
       case "accepted": return "Готов";
       case "in_transit": return "В дорозі";
       case "delivered": return "Доставлено";
