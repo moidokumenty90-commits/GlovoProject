@@ -32,13 +32,11 @@ import {
 } from "@/components/ui/dialog";
 import { OrderStatusBadge } from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Order } from "@shared/schema";
 
 export default function History() {
   const { t } = useLanguage();
-  const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState("all");
   const [customerSearch, setCustomerSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -86,13 +84,6 @@ export default function History() {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
       setDeleteOrderId(null);
     },
-    onError: () => {
-      toast({
-        title: "Помилка",
-        description: "Не вдалося видалити замовлення",
-        variant: "destructive",
-      });
-    },
   });
 
   const updateOrderMutation = useMutation({
@@ -102,18 +93,7 @@ export default function History() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
-      toast({
-        title: "Замовлення оновлено",
-        description: "Зміни успішно збережено",
-      });
       setEditOrder(null);
-    },
-    onError: () => {
-      toast({
-        title: "Помилка",
-        description: "Не вдалося оновити замовлення",
-        variant: "destructive",
-      });
     },
   });
 

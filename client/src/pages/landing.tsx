@@ -4,24 +4,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Clock, Lock, User } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/Без_названия_1764747745659.png";
 
 export default function Landing() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     
     if (!username || !password) {
-      toast({
-        variant: "destructive",
-        title: "Ошибка",
-        description: "Введите логин и пароль",
-      });
+      setError("Введите логин и пароль");
       return;
     }
 
@@ -44,11 +40,7 @@ export default function Landing() {
 
       window.location.href = "/";
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Ошибка входа",
-        description: error.message || "Неверный логин или пароль",
-      });
+      setError(error.message || "Неверный логин или пароль");
     } finally {
       setIsLoading(false);
     }
@@ -109,6 +101,12 @@ export default function Landing() {
                     disabled={isLoading}
                   />
                 </div>
+
+                {error && (
+                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm" data-testid="text-login-error">
+                    {error}
+                  </div>
+                )}
 
                 <Button
                   type="submit"

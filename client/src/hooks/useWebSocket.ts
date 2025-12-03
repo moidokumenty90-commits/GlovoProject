@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 interface WebSocketMessage {
   type: string;
@@ -22,7 +21,6 @@ export function useWebSocket({ courierId, onNewOrder, onOrderUpdate, onChatMessa
   const [lastNotification, setLastNotification] = useState<WebSocketMessage | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<number | null>(null);
-  const { toast } = useToast();
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -90,21 +88,13 @@ export function useWebSocket({ courierId, onNewOrder, onOrderUpdate, onChatMessa
 
     switch (notification.type) {
       case "new_order":
-        toast({
-          title: notification.title,
-          description: notification.message,
-        });
         onNewOrder?.(notification.order);
         break;
       case "order_update":
-        toast({
-          title: notification.title,
-          description: notification.message,
-        });
         onOrderUpdate?.(notification.order);
         break;
     }
-  }, [toast, onNewOrder, onOrderUpdate]);
+  }, [onNewOrder, onOrderUpdate]);
 
   const authenticate = useCallback((newCourierId: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {

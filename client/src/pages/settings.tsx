@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
@@ -20,7 +19,6 @@ import type { Courier, Marker } from "@shared/schema";
 import type { Language } from "@/lib/i18n/translations";
 
 export default function Settings() {
-  const { toast } = useToast();
   const { language, setLanguage, t, languageNames } = useLanguage();
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState("");
@@ -43,17 +41,6 @@ export default function Settings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/courier"] });
       setEditingName(false);
-      toast({
-        title: "Сохранено",
-        description: "Данные курьера обновлены",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить изменения",
-        variant: "destructive",
-      });
     },
   });
 

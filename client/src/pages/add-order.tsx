@@ -23,7 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
@@ -67,7 +66,6 @@ interface OrderItem {
 }
 
 export default function AddOrder() {
-  const { toast } = useToast();
   const [, navigate] = useLocation();
   const [items, setItems] = useState<OrderItem[]>([]);
   const [newItemName, setNewItemName] = useState("");
@@ -121,18 +119,7 @@ export default function AddOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
-      toast({
-        title: "Заказ создан",
-        description: "Новый заказ успешно добавлен",
-      });
       navigate("/");
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось создать заказ",
-        variant: "destructive",
-      });
     },
   });
 
