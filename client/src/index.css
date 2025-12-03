@@ -368,3 +368,37 @@
     opacity: 0.9;
   }
 }
+
+/* Crisp image rendering */
+img,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-container {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .leaflet-tile {
+    image-rendering: auto;
+  }
+}
+
+/* Prevent blur on transforms */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix for Safari blur */
+.leaflet-fade-anim .leaflet-tile {
+  will-change: opacity;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+  will-change: transform;
+}
