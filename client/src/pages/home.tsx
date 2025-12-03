@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { MapView } from "@/components/MapView";
+import { MapView, MapViewRef } from "@/components/MapView";
 import { TopBar } from "@/components/TopBar";
 import { OrderPanel } from "@/components/OrderPanel";
 import { BurgerMenu } from "@/components/BurgerMenu";
@@ -17,6 +17,7 @@ import type { Courier, Order, Marker } from "@shared/schema";
 
 export default function Home() {
   const { toast } = useToast();
+  const mapRef = useRef<MapViewRef>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [confirmDeliveryOpen, setConfirmDeliveryOpen] = useState(false);
@@ -260,6 +261,7 @@ export default function Home() {
       {/* Map - lower z-index */}
       <div className="absolute inset-0 z-0">
         <MapView
+          ref={mapRef}
           courierLocation={courierLocation}
           order={order || null}
           markers={markers}
@@ -316,7 +318,9 @@ export default function Home() {
         {/* GPS/Location Button - Circle style */}
         <button
           onClick={() => {
-            // Center map on courier location
+            if (courierLocation && mapRef.current) {
+              mapRef.current.centerOnLocation(courierLocation.lat, courierLocation.lng);
+            }
           }}
           className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center"
           data-testid="button-center-location"

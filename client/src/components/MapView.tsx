@@ -15,6 +15,7 @@ interface MapViewProps {
 
 export interface MapViewRef {
   getCenter: () => { lat: number; lng: number } | null;
+  centerOnLocation: (lat: number, lng: number) => void;
 }
 
 export const MapView = forwardRef<MapViewRef, MapViewProps>(({ 
@@ -40,6 +41,12 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
       if (!map) return null;
       const center = map.getCenter();
       return { lat: center.lat, lng: center.lng };
+    },
+    centerOnLocation: (lat: number, lng: number) => {
+      const map = mapInstanceRef.current;
+      if (map) {
+        map.setView([lat, lng], 16, { animate: true });
+      }
     },
   }));
 
