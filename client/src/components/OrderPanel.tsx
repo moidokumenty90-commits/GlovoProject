@@ -190,7 +190,9 @@ export function OrderPanel({
             onTouchStart={handlePopupDragStart}
             onTouchMove={handlePopupDragMove}
             onTouchEnd={handlePopupDragEnd}
+            onClick={() => setPopupExpanded(!popupExpanded)}
             className="w-full py-3 flex items-center justify-center cursor-pointer flex-shrink-0 touch-none"
+            data-testid="button-toggle-popup"
           >
             <div className="w-10 h-1 bg-gray-300 rounded-full" />
           </div>
