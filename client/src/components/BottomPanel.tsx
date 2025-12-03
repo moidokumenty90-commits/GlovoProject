@@ -13,6 +13,7 @@ export function BottomPanel({ isExpanded, onToggleExpand }: BottomPanelProps) {
   const [, setLocation] = useLocation();
   const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastTapRef = useRef<number>(0);
 
   const handleAddOrder = () => {
     setLocation("/add-order");
@@ -43,6 +44,18 @@ export function BottomPanel({ isExpanded, onToggleExpand }: BottomPanelProps) {
 
   const handleRemovePhoto = () => {
     setAttachedPhoto(null);
+  };
+
+  // Double tap handler for mobile
+  const handlePhotoTap = () => {
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      // Double tap detected
+      handleRemovePhoto();
+    }
+    lastTapRef.current = now;
   };
 
   return (
@@ -90,21 +103,16 @@ export function BottomPanel({ isExpanded, onToggleExpand }: BottomPanelProps) {
           {/* Photo attached - full screen view */}
           {attachedPhoto ? (
             <>
-              {/* Full photo display */}
+              {/* Full photo display - double tap to remove */}
               <div className="flex-1 relative mb-4">
                 <img
                   src={attachedPhoto}
                   alt="Прикрепленное фото"
-                  className="w-full h-full object-contain rounded-2xl"
+                  className="w-full h-full object-contain rounded-2xl cursor-pointer"
+                  onClick={handlePhotoTap}
+                  onDoubleClick={handleRemovePhoto}
                   data-testid="attached-photo"
                 />
-                <button
-                  onClick={handleRemovePhoto}
-                  className="absolute top-3 right-3 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center"
-                  data-testid="button-remove-photo"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
               </div>
 
               {/* Confirm Button */}
