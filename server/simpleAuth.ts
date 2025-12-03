@@ -109,13 +109,25 @@ export function setupSimpleAuth(app: Express) {
     }
   });
 
-  app.post("/api/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Ошибка выхода из системы" });
+  app.post("/api/logout", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      // Clear session mapping if exists
+      if (userId) {
+        await storage.deleteUserSession(userId);
       }
-      res.json({ success: true });
-    });
+      
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Ошибка выхода из системы" });
+        }
+        res.json({ success: true });
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Ошибка выхода из системы" });
+    }
   });
 
   app.get("/api/auth/user", (req, res) => {
@@ -131,10 +143,27 @@ export function setupSimpleAuth(app: Express) {
   });
 }
 
-export const isAuthenticated: RequestHandler = (req, res, next) => {
+export const isAuthenticated: RequestHandler = async (req, res, next) => {
   if (!req.session.isAuthenticated || !req.session.userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }
+  
+  // Single-device enforcement: Check if this session is still the active one
+  try {
+    const activeSession = await storage.getUserSession(req.session.userId);
+    if (activeSession && activeSession.sessionId !== req.sessionID) {
+      // This session has been superseded by a login from another device
+      req.session.destroy(() => {});
+      return res.status(401).json({ 
+        message: "Сессия завершена. Выполнен вход с другого устройства.",
+        code: "SESSION_SUPERSEDED"
+      });
+    }
+  } catch (error) {
+    console.error("Session validation error:", error);
+    // Continue if check fails - don't block user for database errors
+  }
+  
   (req as any).userId = req.session.userId;
   next();
 };
