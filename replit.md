@@ -57,11 +57,18 @@ shared/
 6. **Order Creation**: Admin form to create new orders
 
 ## Authentication
-Login credentials are stored in `server/authConfig.ts`:
-- Default username: `courier`
-- Default password: `glovo123`
+Login credentials are stored in environment variables (Secrets):
+- USER1_USERNAME / USER1_PASSWORD
+- USER2_USERNAME / USER2_PASSWORD
+- USER3_USERNAME / USER3_PASSWORD
+- USER4_USERNAME / USER4_PASSWORD
 
-To change credentials, edit the `AUTH_CREDENTIALS` object in that file.
+### Single-Device Login Enforcement
+Each login can only be active on ONE device at a time:
+- When logging in from a new device, the previous session is automatically invalidated
+- The previous device will see "Сессия завершена. Выполнен вход с другого устройства"
+- Session data is stored in PostgreSQL (user_sessions table)
+- Protected against session fixation attacks via session regeneration
 
 ## Database Schema
 - `users`: System users

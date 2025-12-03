@@ -59,7 +59,7 @@ export function setupSimpleAuth(app: Express) {
 
       // Single-device enforcement: Check for existing session and invalidate it
       const existingSession = await storage.getUserSession(courierInfo.id);
-      if (existingSession && existingSession.sessionId !== req.sessionID) {
+      if (existingSession) {
         // Destroy the old session from the database
         await storage.deleteSessionById(existingSession.sessionId);
         console.log(`Invalidated previous session for user ${courierInfo.id}`);
@@ -84,6 +84,18 @@ export function setupSimpleAuth(app: Express) {
         });
       }
 
+      // Regenerate session to prevent session fixation attacks
+      const regenerateSession = (): Promise<void> => {
+        return new Promise((resolve, reject) => {
+          req.session.regenerate((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+      };
+
+      await regenerateSession();
+
       req.session.userId = courierInfo.id;
       req.session.isAuthenticated = true;
       req.session.courierName = courierInfo.name;
@@ -93,7 +105,7 @@ export function setupSimpleAuth(app: Express) {
       const deviceInfo = req.headers["user-agent"] || "unknown";
       const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
 
-      // Save session mapping for single-device enforcement
+      // Save session mapping for single-device enforcement (with new session ID)
       await storage.setUserSession(courierInfo.id, req.sessionID!, deviceInfo, ipAddress);
 
       res.json({ 
