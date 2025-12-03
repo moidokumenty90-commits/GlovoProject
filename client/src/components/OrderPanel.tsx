@@ -559,7 +559,8 @@ export function OrderPanel({
             </p>
           </div>
 
-          <div className="h-px bg-gray-100 mx-4" />
+          {/* Gray line above client unavailable button */}
+          <div className="h-px w-full mt-4" style={{ backgroundColor: "#9CA3AF" }} />
 
           <button 
             className="w-full px-4 py-4 flex items-center justify-between"
@@ -568,6 +569,9 @@ export function OrderPanel({
             <span className="font-bold" style={{ color: "#000000" }}>Клиент недоступен</span>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
+
+          {/* Gray line below client unavailable button */}
+          <div className="h-px w-full" style={{ backgroundColor: "#9CA3AF" }} />
         </div>
 
         <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-white">
