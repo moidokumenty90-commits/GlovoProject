@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Phone, MessageSquare, ChevronUp, ChevronDown, CheckCircle } from "lucide-react";
+import { Phone, MessageCircle, ChevronUp, ChevronDown, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { OrderStatusBadge } from "./StatusBadge";
+import { ChatButton } from "./ChatPanel";
 import type { Order, OrderItem } from "@shared/schema";
 
 interface OrderPanelProps {
@@ -12,6 +13,7 @@ interface OrderPanelProps {
   onStatusChange?: (status: string) => void;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
+  onOpenChat?: () => void;
 }
 
 export function OrderPanel({
@@ -21,6 +23,7 @@ export function OrderPanel({
   onStatusChange,
   isExpanded = false,
   onToggleExpand,
+  onOpenChat,
 }: OrderPanelProps) {
   const [showItems, setShowItems] = useState(false);
 
@@ -43,10 +46,8 @@ export function OrderPanel({
     }
   };
 
-  const handleMessage = () => {
-    if (order.customerPhone) {
-      window.location.href = `sms:${order.customerPhone}`;
-    }
+  const handleOpenChat = () => {
+    onOpenChat?.();
   };
 
   return (
@@ -96,13 +97,9 @@ export function OrderPanel({
               >
                 <Phone className="w-5 h-5" />
               </button>
-              <button
-                onClick={handleMessage}
-                className="w-12 h-12 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center hover:bg-gray-300 transition-colors"
-                data-testid="button-message"
-              >
-                <MessageSquare className="w-5 h-5" />
-              </button>
+              {order.id && (
+                <ChatButton orderId={order.id} onClick={handleOpenChat} />
+              )}
             </div>
           </div>
 

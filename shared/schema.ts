@@ -133,6 +133,25 @@ export const insertMarkerSchema = createInsertSchema(markers).omit({
 export type InsertMarker = z.infer<typeof insertMarkerSchema>;
 export type Marker = typeof markers.$inferSelect;
 
+// Messages table for chat
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderId: varchar("order_id").references(() => orders.id),
+  senderId: varchar("sender_id").notNull(), // courierId or "customer"
+  senderType: text("sender_type").notNull(), // "courier" or "customer"
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
+
 // Order status enum for frontend
 export const ORDER_STATUSES = {
   NEW: "new",

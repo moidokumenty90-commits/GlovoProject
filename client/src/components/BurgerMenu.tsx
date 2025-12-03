@@ -1,4 +1,4 @@
-import { X, Plus, Settings, MapPin, Trash2, User, LogOut } from "lucide-react";
+import { X, Plus, Settings, MapPin, Trash2, User, LogOut, History, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -83,6 +83,32 @@ export function BurgerMenu({
             >
               <Settings className="w-5 h-5" />
               <span className="text-base font-medium">Изменить данные</span>
+            </Link>
+
+            <Link
+              href="/history"
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors",
+                location === "/history" && "bg-muted"
+              )}
+              data-testid="link-history"
+            >
+              <History className="w-5 h-5" />
+              <span className="text-base font-medium">История заказов</span>
+            </Link>
+
+            <Link
+              href="/earnings"
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors",
+                location === "/earnings" && "bg-muted"
+              )}
+              data-testid="link-earnings"
+            >
+              <TrendingUp className="w-5 h-5" />
+              <span className="text-base font-medium">Заработок</span>
             </Link>
 
             <div className="h-px bg-border my-2" />

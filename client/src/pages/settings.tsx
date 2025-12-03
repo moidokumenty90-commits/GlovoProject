@@ -1,17 +1,27 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, User, Trash2 } from "lucide-react";
+import { ArrowLeft, MapPin, User, Trash2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link } from "wouter";
 import type { Courier, Marker } from "@shared/schema";
+import type { Language } from "@/lib/i18n/translations";
 
 export default function Settings() {
   const { toast } = useToast();
+  const { language, setLanguage, t, languageNames } = useLanguage();
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -99,7 +109,7 @@ export default function Settings() {
               <ArrowLeft className="w-5 h-5" />
             </button>
           </Link>
-          <h1 className="text-xl font-bold">Настройки</h1>
+          <h1 className="text-xl font-bold">{t.settings.title}</h1>
           <div className="w-9" /> {/* Spacer for centering */}
         </div>
       </header>
@@ -148,15 +158,38 @@ export default function Settings() {
         {/* Status Section */}
         <section className="space-y-4">
           <div className="flex items-center justify-between py-4 border-b">
-            <Label className="text-base">Поменять статус</Label>
+            <Label className="text-base">{t.status.online}/{t.status.offline}</Label>
             <Button
               variant={courier?.isOnline ? "default" : "outline"}
               onClick={() => toggleStatusMutation.mutate()}
               className={courier?.isOnline ? "bg-green-500 hover:bg-green-600" : ""}
               data-testid="button-toggle-status"
             >
-              {courier?.isOnline ? "Онлайн" : "Оффлайн"}
+              {courier?.isOnline ? t.status.online : t.status.offline}
             </Button>
+          </div>
+        </section>
+
+        {/* Language Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between py-4 border-b">
+            <div className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-muted-foreground" />
+              <Label className="text-base">{t.settings.language}</Label>
+            </div>
+            <Select
+              value={language}
+              onValueChange={(value) => setLanguage(value as Language)}
+            >
+              <SelectTrigger className="w-36" data-testid="select-language">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ru">{languageNames.ru}</SelectItem>
+                <SelectItem value="uk">{languageNames.uk}</SelectItem>
+                <SelectItem value="en">{languageNames.en}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </section>
 
@@ -266,7 +299,7 @@ export default function Settings() {
             onClick={() => window.location.href = "/api/logout"}
             data-testid="button-logout"
           >
-            Выйти из аккаунта
+            {t.auth.logout}
           </Button>
         </section>
       </main>

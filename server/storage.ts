@@ -3,6 +3,7 @@ import {
   couriers,
   orders,
   markers,
+  messages,
   type User,
   type UpsertUser,
   type Courier,
@@ -11,9 +12,11 @@ import {
   type InsertOrder,
   type Marker,
   type InsertMarker,
+  type Message,
+  type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (for Replit Auth)
@@ -112,6 +115,73 @@ export class DatabaseStorage implements IStorage {
       return await db.select().from(orders).where(eq(orders.courierId, courierId));
     }
     return await db.select().from(orders);
+  }
+
+  async getOrderHistory(courierId: string, filters?: {
+    status?: string;
+    dateFrom?: Date;
+    dateTo?: Date;
+    customerName?: string;
+  }): Promise<Order[]> {
+    let query = db.select().from(orders).where(eq(orders.courierId, courierId));
+    
+    const conditions = [eq(orders.courierId, courierId)];
+    
+    if (filters?.status && filters.status !== "all") {
+      conditions.push(eq(orders.status, filters.status));
+    }
+    
+    if (filters?.customerName) {
+      conditions.push(sql`LOWER(${orders.customerName}) LIKE LOWER(${'%' + filters.customerName + '%'})`);
+    }
+    
+    if (filters?.dateFrom) {
+      conditions.push(sql`${orders.createdAt} >= ${filters.dateFrom}`);
+    }
+    
+    if (filters?.dateTo) {
+      conditions.push(sql`${orders.createdAt} <= ${filters.dateTo}`);
+    }
+    
+    return await db.select().from(orders).where(and(...conditions)).orderBy(sql`${orders.createdAt} DESC`);
+  }
+
+  async getOrderStats(courierId: string, period: "day" | "week" | "month"): Promise<{
+    totalOrders: number;
+    deliveredOrders: number;
+    totalEarnings: number;
+  }> {
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case "day":
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case "week":
+        const dayOfWeek = now.getDay();
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+        break;
+      case "month":
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+    }
+    
+    const periodOrders = await db.select().from(orders).where(
+      and(
+        eq(orders.courierId, courierId),
+        sql`${orders.createdAt} >= ${startDate}`
+      )
+    );
+    
+    const deliveredOrders = periodOrders.filter(o => o.status === "delivered");
+    const totalEarnings = deliveredOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+    
+    return {
+      totalOrders: periodOrders.length,
+      deliveredOrders: deliveredOrders.length,
+      totalEarnings,
+    };
   }
 
   async getActiveOrder(courierId: string): Promise<Order | undefined> {
@@ -228,6 +298,49 @@ export class DatabaseStorage implements IStorage {
   async deleteMarker(id: string): Promise<boolean> {
     const result = await db.delete(markers).where(eq(markers.id, id)).returning();
     return result.length > 0;
+  }
+
+  // Message operations
+  async getMessages(orderId: string): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.orderId, orderId))
+      .orderBy(sql`${messages.createdAt} ASC`);
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db
+      .insert(messages)
+      .values(message)
+      .returning();
+    return newMessage;
+  }
+
+  async markMessagesAsRead(orderId: string, senderType: string): Promise<void> {
+    await db
+      .update(messages)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(messages.orderId, orderId),
+          sql`${messages.senderType} != ${senderType}`
+        )
+      );
+  }
+
+  async getUnreadMessageCount(orderId: string, forSenderType: string): Promise<number> {
+    const result = await db
+      .select()
+      .from(messages)
+      .where(
+        and(
+          eq(messages.orderId, orderId),
+          eq(messages.isRead, false),
+          sql`${messages.senderType} != ${forSenderType}`
+        )
+      );
+    return result.length;
   }
 }
 

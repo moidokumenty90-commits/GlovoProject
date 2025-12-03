@@ -7,7 +7,9 @@ import { BurgerMenu } from "@/components/BurgerMenu";
 import { NavigationButton } from "@/components/NavigationButton";
 import { DeliveryConfirmDialog } from "@/components/ConfirmDialog";
 import { MarkerDialog, DeleteMarkerDialog } from "@/components/MarkerDialog";
+import { ChatPanel } from "@/components/ChatPanel";
 import { useToast } from "@/hooks/use-toast";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Courier, Order, Marker } from "@shared/schema";
 
@@ -24,6 +26,9 @@ export default function Home() {
   const [deleteRestaurantOpen, setDeleteRestaurantOpen] = useState(false);
   const [deleteCustomerOpen, setDeleteCustomerOpen] = useState(false);
   const [mapClickCoords, setMapClickCoords] = useState<{ lat: number; lng: number } | null>(null);
+  
+  // Chat
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Fetch courier data
   const { data: courier, isLoading: courierLoading } = useQuery<Courier>({
@@ -33,7 +38,18 @@ export default function Home() {
   // Fetch active order
   const { data: order, isLoading: orderLoading } = useQuery<Order | null>({
     queryKey: ["/api/orders/active"],
-    refetchInterval: 5000, // Poll for new orders every 5 seconds
+    refetchInterval: 10000, // Poll less frequently since we have WebSocket
+  });
+
+  // WebSocket for real-time notifications
+  const { isConnected: wsConnected } = useWebSocket({
+    courierId: courier?.id,
+    onNewOrder: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
+    },
+    onOrderUpdate: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
+    },
   });
 
   // Fetch markers
@@ -252,6 +268,16 @@ export default function Home() {
           onAccept={() => acceptOrderMutation.mutate()}
           onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
           onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
+          onOpenChat={() => setChatOpen(true)}
+        />
+      )}
+
+      {/* Chat Panel */}
+      {order && (
+        <ChatPanel
+          orderId={order.id}
+          isOpen={chatOpen}
+          onClose={() => setChatOpen(false)}
         />
       )}
 
