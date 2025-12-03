@@ -20,6 +20,7 @@ export default function Home() {
   const { toast } = useToast();
   const mapRef = useRef<MapViewRef>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [orderPanelState, setOrderPanelState] = useState<"collapsed" | "default" | "expanded">("default");
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [confirmDeliveryOpen, setConfirmDeliveryOpen] = useState(false);
   const [courierLocation, setCourierLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -304,45 +305,44 @@ export default function Home() {
         </div>
       )}
 
-      {/* Right Side Floating Buttons - Glovo style circles */}
-      <div 
-        className="absolute right-4 z-30 flex flex-col gap-3 transition-all duration-300"
-        style={{ bottom: order ? (panelExpanded ? "calc(85vh + 16px)" : "calc(50vh + 16px)") : "100px" }}
-      >
-        {/* GPS/Location Button - Circle style */}
-        <button
-          onClick={() => {
-            if (courierLocation && mapRef.current) {
-              mapRef.current.centerOnLocation(courierLocation.lat, courierLocation.lng);
-            }
-          }}
-          className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center"
-          data-testid="button-center-location"
+      {/* Right Side Floating Buttons - Hidden when order panel is visible */}
+      {!order && (
+        <div 
+          className="absolute right-4 z-30 flex flex-col gap-3 transition-all duration-300"
+          style={{ bottom: panelExpanded ? "calc(85vh + 16px)" : "100px" }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-700">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-          </svg>
-        </button>
-
-        {/* Navigation Button - Green circle */}
-        {order && order.status !== "delivered" && (
-          <NavigationButton
-            restaurantLat={order.restaurantLat}
-            restaurantLng={order.restaurantLng}
-            customerLat={order.customerLat}
-            customerLng={order.customerLng}
-          />
-        )}
-      </div>
+          {/* GPS/Location Button - Circle style */}
+          <button
+            onClick={() => {
+              if (courierLocation && mapRef.current) {
+                mapRef.current.centerOnLocation(courierLocation.lat, courierLocation.lng);
+              }
+            }}
+            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center"
+            data-testid="button-center-location"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-700">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Order Panel - Show when there's an active order */}
       {order && (
         <div className="relative z-30">
           <OrderPanel
             order={order}
-            isExpanded={panelExpanded}
-            onToggleExpand={() => setPanelExpanded(!panelExpanded)}
+            panelState={orderPanelState}
+            onToggleExpand={() => {
+              // Cycle through states: collapsed -> default -> expanded -> collapsed
+              setOrderPanelState(prev => {
+                if (prev === "collapsed") return "default";
+                if (prev === "default") return "expanded";
+                return "collapsed";
+              });
+            }}
             onAccept={() => acceptOrderMutation.mutate()}
             onConfirmDelivery={() => setConfirmDeliveryOpen(true)}
             onStatusChange={(status) => updateOrderStatusMutation.mutate(status)}
