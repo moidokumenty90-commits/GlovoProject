@@ -141,10 +141,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/markers"] });
-      toast({
-        title: "Метка добавлена",
-        description: "Новая метка успешно создана",
-      });
     },
   });
 
@@ -177,9 +173,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/markers"] });
-      toast({
-        title: "Метка удалена",
-      });
     },
   });
 
