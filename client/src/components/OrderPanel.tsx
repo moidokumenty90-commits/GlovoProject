@@ -206,15 +206,17 @@ export function OrderPanel({
           </button>
 
           <div className="p-6 pt-2 overflow-y-auto flex-1">
-            {/* Position 1: Status badge */}
-            <span
-              className="inline-block px-4 py-1.5 rounded-full text-sm font-medium mb-4"
-              style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
-            >
-              {getOrderStatusLabel(selectedOrder.status)}
-            </span>
+            {/* Position 1: Status badge - on top */}
+            <div className="mb-2">
+              <span
+                className="inline-block px-4 py-1.5 rounded-full text-sm font-medium"
+                style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
+              >
+                {getOrderStatusLabel(selectedOrder.status)}
+              </span>
+            </div>
 
-            {/* Position 2: Order number */}
+            {/* Position 2: Order number - directly below */}
             <div 
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border-2 mb-4"
               style={{ borderColor: "#00A082" }}
