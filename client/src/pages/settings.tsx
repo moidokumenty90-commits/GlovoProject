@@ -76,9 +76,6 @@ export default function Settings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/markers"] });
-      toast({
-        title: "Метка удалена",
-      });
     },
   });
 
