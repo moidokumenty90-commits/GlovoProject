@@ -512,22 +512,24 @@ export function OrderPanel({
               {order.restaurantName}
             </p>
 
-            <button
-              onClick={() => setShowItems(!showItems)}
-              className="flex items-center gap-1 mb-2"
-              data-testid="button-toggle-items"
-            >
-              <span className="font-medium" style={{ color: "#00A082" }}>
-                {totalItems} прод.
-              </span>
-              <ChevronDown 
-                className={cn(
-                  "w-5 h-5 transition-transform",
-                  showItems && "rotate-180"
-                )}
-                style={{ color: "#00A082" }}
-              />
-            </button>
+            <div className="flex justify-start">
+              <button
+                onClick={() => setShowItems(!showItems)}
+                className="flex items-center gap-1 mb-2"
+                data-testid="button-toggle-items"
+              >
+                <span className="font-medium" style={{ color: "#00A082" }}>
+                  {totalItems} прод.
+                </span>
+                <ChevronDown 
+                  className={cn(
+                    "w-5 h-5 transition-transform",
+                    showItems && "rotate-180"
+                  )}
+                  style={{ color: "#00A082" }}
+                />
+              </button>
+            </div>
 
             {showItems && items.length > 0 && (
               <div className="space-y-2 mb-4 pl-1">
