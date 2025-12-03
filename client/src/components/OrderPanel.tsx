@@ -218,13 +218,13 @@ export function OrderPanel({
 
             {/* Position 2: Order number - directly below */}
             <div 
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border-2 mb-4"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 mb-4"
               style={{ borderColor: "#00A082" }}
             >
-              <span className="text-3xl font-bold" style={{ color: "#00A082" }}>
+              <span className="text-2xl font-bold text-gray-900">
                 #{getShortOrderNum(selectedOrder)}
               </span>
-              <ExternalLink className="w-5 h-5" style={{ color: "#00A082" }} />
+              <ExternalLink className="w-4 h-4" style={{ color: "#00A082" }} />
             </div>
 
             {/* Position 3: Order info */}
