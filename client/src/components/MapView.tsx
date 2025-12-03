@@ -308,21 +308,15 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
         .bindPopup(`<b>${order.customerName}</b><br>${order.customerAddress}`)
         .addTo(map);
 
-      const routePoints: L.LatLngExpression[] = [];
-      
+      // Fit bounds to show all markers
+      const points: L.LatLngExpression[] = [
+        [order.restaurantLat, order.restaurantLng],
+        [order.customerLat, order.customerLng],
+      ];
       if (courierLocation) {
-        routePoints.push([courierLocation.lat, courierLocation.lng]);
+        points.push([courierLocation.lat, courierLocation.lng]);
       }
-      routePoints.push([order.restaurantLat, order.restaurantLng]);
-      routePoints.push([order.customerLat, order.customerLng]);
-
-      routeLayerRef.current = L.polyline(routePoints, {
-        color: "#22C55E",
-        weight: 4,
-        opacity: 0.8,
-      }).addTo(map);
-
-      const bounds = L.latLngBounds(routePoints);
+      const bounds = L.latLngBounds(points);
       map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [order, courierLocation]);
