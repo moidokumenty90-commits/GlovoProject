@@ -26,9 +26,13 @@ export function OrderPanel({
 }: OrderPanelProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [showItems, setShowItems] = useState(false);
+  const [popupExpanded, setPopupExpanded] = useState(false);
   const touchStartY = useRef<number>(0);
   const touchEndY = useRef<number>(0);
   const isDragging = useRef<boolean>(false);
+  const popupTouchStartY = useRef<number>(0);
+  const popupTouchEndY = useRef<number>(0);
+  const popupIsDragging = useRef<boolean>(false);
 
   if (!orders.length) {
     return null;
@@ -130,6 +134,40 @@ export function OrderPanel({
     return "заказов";
   };
 
+  const handlePopupDragStart = (e: TouchEvent) => {
+    popupTouchStartY.current = e.touches[0].clientY;
+    popupTouchEndY.current = e.touches[0].clientY;
+    popupIsDragging.current = true;
+  };
+
+  const handlePopupDragMove = (e: TouchEvent) => {
+    if (popupIsDragging.current) {
+      popupTouchEndY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handlePopupDragEnd = () => {
+    if (!popupIsDragging.current) return;
+    
+    const swipeDistance = popupTouchStartY.current - popupTouchEndY.current;
+    const minSwipeDistance = 40;
+
+    if (Math.abs(swipeDistance) >= minSwipeDistance) {
+      if (swipeDistance > 0) {
+        setPopupExpanded(true);
+      } else {
+        if (popupExpanded) {
+          setPopupExpanded(false);
+        } else {
+          setSelectedOrderId(null);
+          setPopupExpanded(false);
+        }
+      }
+    }
+    
+    popupIsDragging.current = false;
+  };
+
   const renderOrderDetailPopup = () => {
     if (!selectedOrder) return null;
 
@@ -140,18 +178,32 @@ export function OrderPanel({
       <div className="fixed inset-0 z-50 flex items-end justify-center">
         <div 
           className="absolute inset-0 bg-black/40"
-          onClick={() => setSelectedOrderId(null)}
+          onClick={() => { setSelectedOrderId(null); setPopupExpanded(false); }}
         />
-        <div className="relative w-full bg-white rounded-t-3xl max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
+        <div 
+          className={cn(
+            "relative w-full bg-white rounded-t-3xl overflow-hidden animate-in slide-in-from-bottom duration-300 transition-all flex flex-col",
+            popupExpanded ? "h-[95vh]" : "max-h-[50vh]"
+          )}
+        >
+          <div
+            onTouchStart={handlePopupDragStart}
+            onTouchMove={handlePopupDragMove}
+            onTouchEnd={handlePopupDragEnd}
+            className="w-full py-3 flex items-center justify-center cursor-pointer flex-shrink-0 touch-none"
+          >
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+
           <button
-            onClick={() => setSelectedOrderId(null)}
+            onClick={() => { setSelectedOrderId(null); setPopupExpanded(false); }}
             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center"
             data-testid="button-close-order-detail"
           >
             <X className="w-6 h-6 text-gray-400" />
           </button>
 
-          <div className="p-6 pt-8 overflow-y-auto max-h-[80vh]">
+          <div className="p-6 pt-2 overflow-y-auto flex-1">
             <div className="mb-3">
               <span
                 className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-2"
