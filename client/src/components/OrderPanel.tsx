@@ -151,7 +151,7 @@ export function OrderPanel({
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300 flex flex-col",
+        "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300 flex flex-col touch-pan-y",
         getPanelHeight()
       )}
       onTouchStart={handleTouchStart}
@@ -299,7 +299,7 @@ export function OrderPanel({
           </div>
 
           {/* Fixed button at bottom for both default and expanded states */}
-          <div className="flex-shrink-0 px-5 pb-6 pt-2 bg-white border-t border-gray-100">
+          <div className="flex-shrink-0 px-5 pb-6 pt-2 bg-white border-t border-gray-100 safe-bottom">
             {renderActionButton()}
           </div>
         </>
