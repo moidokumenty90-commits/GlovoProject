@@ -39,8 +39,6 @@ const orderItemSchema = z.object({
 const formSchema = z.object({
   restaurantName: z.string().min(1, "Введите название заведения"),
   restaurantAddress: z.string().min(1, "Введите адрес заведения"),
-  restaurantLat: z.number(),
-  restaurantLng: z.number(),
   customerAddress: z.string().min(1, "Введите адрес доставки"),
   houseNumber: z.string().optional(),
   apartment: z.string().optional(),
@@ -48,8 +46,6 @@ const formSchema = z.object({
   customerName: z.string().min(1, "Введите имя клиента"),
   customerId: z.string().optional(),
   customerPhone: z.string().optional(),
-  customerLat: z.number(),
-  customerLng: z.number(),
   orderNumber: z.string().min(1, "Введите номер заказа"),
   totalPrice: z.number().min(0, "Введите сумму заказа"),
   paymentMethod: z.enum(["cash", "card"]),
@@ -83,8 +79,6 @@ export default function AddOrder() {
     defaultValues: {
       restaurantName: "",
       restaurantAddress: "",
-      restaurantLat: 48.4647,
-      restaurantLng: 35.0462,
       customerAddress: "",
       houseNumber: "",
       apartment: "",
@@ -92,8 +86,6 @@ export default function AddOrder() {
       customerName: "",
       customerId: "",
       customerPhone: "",
-      customerLat: 48.4700,
-      customerLng: 35.0500,
       orderNumber: "",
       totalPrice: 0,
       paymentMethod: "cash",
@@ -209,47 +201,6 @@ export default function AddOrder() {
                 </FormItem>
               )}
             />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="restaurantLat"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Широта</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="any"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                        data-testid="input-restaurant-lat"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="restaurantLng"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Долгота</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="any"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                        data-testid="input-restaurant-lng"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
           </section>
 
           {/* Delivery Address Section */}
@@ -325,47 +276,6 @@ export default function AddOrder() {
                 </FormItem>
               )}
             />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="customerLat"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Широта</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="any"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                        data-testid="input-customer-lat"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="customerLng"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Долгота</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="any"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                        data-testid="input-customer-lng"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
           </section>
 
           {/* Customer Section */}
