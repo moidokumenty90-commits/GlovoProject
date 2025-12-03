@@ -42,7 +42,6 @@ export function OrderPanel({
     onOpenChat?.();
   };
 
-  // Format address with all details
   const formatAddress = () => {
     let addr = order.customerAddress;
     if (order.houseNumber) addr += `, ${order.houseNumber}`;
@@ -53,7 +52,7 @@ export function OrderPanel({
     <div
       className={cn(
         "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300",
-        isExpanded ? "max-h-[85vh]" : "max-h-[45vh]"
+        isExpanded ? "max-h-[85vh]" : "max-h-[50vh]"
       )}
       data-testid="order-panel"
     >
@@ -68,26 +67,26 @@ export function OrderPanel({
 
       <div 
         className="overflow-y-auto px-5 pb-6" 
-        style={{ maxHeight: isExpanded ? 'calc(85vh - 50px)' : 'calc(45vh - 50px)' }}
+        style={{ maxHeight: isExpanded ? 'calc(85vh - 50px)' : 'calc(50vh - 50px)' }}
       >
         {/* Customer Name + Action Buttons Row */}
-        <div className="flex items-start justify-between mb-1">
+        <div className="flex items-start justify-between mb-2">
           <h2 className="text-xl font-bold text-gray-900" data-testid="text-customer-name">
             {order.customerName}
           </h2>
           
-          {/* Call and Chat Buttons */}
-          <div className="flex items-center gap-3">
+          {/* Call and Chat Buttons - Glovo style circles */}
+          <div className="flex items-center gap-2">
             <button
               onClick={handleCall}
-              className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center"
+              className="w-11 h-11 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
               data-testid="button-call"
             >
               <Phone className="w-5 h-5 text-gray-600" />
             </button>
             <button
               onClick={handleOpenChat}
-              className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center"
+              className="w-11 h-11 rounded-full border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
               data-testid="button-chat"
             >
               <MessageSquare className="w-5 h-5 text-gray-600" />
@@ -101,10 +100,11 @@ export function OrderPanel({
         </p>
 
         {/* Floor/Apartment info */}
-        {order.floor && (
+        {(order.floor || order.apartment) && (
           <p className="text-gray-500 text-sm mb-4">
-            Этаж: {order.floor}
-            {order.apartment && ` • Кв: ${order.apartment}`}
+            {order.floor && `Этаж: ${order.floor}`}
+            {order.floor && order.apartment && " · "}
+            {order.apartment && `Кв: ${order.apartment}`}
           </p>
         )}
 
@@ -126,10 +126,10 @@ export function OrderPanel({
           {order.restaurantName}
         </h3>
 
-        {/* Products Toggle */}
+        {/* Products Toggle - Glovo green style */}
         <button
           onClick={() => setShowItems(!showItems)}
-          className="flex items-center gap-1 text-green-600 font-medium text-sm mb-3"
+          className="flex items-center gap-1 text-green-500 font-medium text-sm mb-3"
           data-testid="button-toggle-items"
         >
           <span>{totalItems} прод.</span>
@@ -142,11 +142,11 @@ export function OrderPanel({
 
         {/* Order Items List */}
         {showItems && items.length > 0 && (
-          <div className="space-y-2 mb-4">
+          <div className="space-y-3 mb-4">
             {items.map((item, index) => (
               <div key={index} className="flex justify-between items-start">
                 <div className="flex-1">
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-start gap-3">
                     <span className="text-gray-900 font-medium">{item.quantity || 1}</span>
                     <div>
                       <span className="text-gray-900">{item.name}</span>
@@ -180,7 +180,7 @@ export function OrderPanel({
             </div>
 
             {/* Total */}
-            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+            <div className="bg-gray-50 rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Сумма к оплате</span>
                 <span className="text-2xl font-bold text-gray-900" data-testid="text-order-total">
@@ -191,18 +191,18 @@ export function OrderPanel({
 
             {/* Comment */}
             {order.comment && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-4">
                 <p className="text-sm text-gray-700">{order.comment}</p>
               </div>
             )}
           </>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Buttons - Glovo style */}
         <div className="mt-4">
           {order.status === "new" && (
             <Button
-              className="w-full h-14 rounded-xl text-base font-semibold bg-green-500 hover:bg-green-600 text-white"
+              className="w-full h-14 rounded-full text-base font-semibold bg-green-500 hover:bg-green-600 text-white shadow-lg"
               onClick={onAccept}
               data-testid="button-accept-order"
             >
@@ -212,7 +212,7 @@ export function OrderPanel({
 
           {order.status === "accepted" && (
             <Button
-              className="w-full h-14 rounded-xl text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white"
+              className="w-full h-14 rounded-full text-base font-semibold bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
               onClick={() => onStatusChange?.("in_transit")}
               data-testid="button-start-delivery"
             >
@@ -223,7 +223,7 @@ export function OrderPanel({
 
           {order.status === "in_transit" && (
             <Button
-              className="w-full h-14 rounded-xl text-base font-semibold bg-gray-900 hover:bg-gray-800 text-white"
+              className="w-full h-14 rounded-full text-base font-semibold bg-gray-900 hover:bg-gray-800 text-white shadow-lg"
               onClick={onConfirmDelivery}
               data-testid="button-confirm-delivery"
             >

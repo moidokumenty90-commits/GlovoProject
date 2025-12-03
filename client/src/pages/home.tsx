@@ -286,12 +286,12 @@ export default function Home() {
         </div>
       )}
 
-      {/* Right Side Floating Buttons */}
+      {/* Right Side Floating Buttons - Glovo style circles */}
       <div 
         className="absolute right-4 z-30 flex flex-col gap-3 transition-all duration-300"
-        style={{ bottom: order ? (panelExpanded ? "calc(85vh + 16px)" : "calc(45vh + 16px)") : "100px" }}
+        style={{ bottom: order ? (panelExpanded ? "calc(85vh + 16px)" : "calc(50vh + 16px)") : "100px" }}
       >
-        {/* GPS/Location Button */}
+        {/* GPS/Location Button - Circle style */}
         <button
           onClick={() => {
             // Center map on courier location
@@ -299,19 +299,13 @@ export default function Home() {
           className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center"
           data-testid="button-center-location"
         >
-          <div className="w-5 h-5 relative">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-gray-900" />
-            </div>
-            <div className="absolute inset-0 border-2 border-gray-900 rounded-full" />
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0.5 h-2 bg-gray-900" />
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0.5 h-2 bg-gray-900" />
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-0.5 bg-gray-900" />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 w-2 h-0.5 bg-gray-900" />
-          </div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-700">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+          </svg>
         </button>
 
-        {/* Navigation/Compass Button */}
+        {/* Navigation Button - Green circle */}
         {order && order.status !== "delivered" && (
           <NavigationButton
             restaurantLat={order.restaurantLat}

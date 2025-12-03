@@ -36,7 +36,7 @@ export function NavigationButton({
       onClick={handleNavigate}
       disabled={isDisabled}
       className={cn(
-        "w-12 h-12 rounded-xl bg-green-500 shadow-lg flex items-center justify-center transition-all",
+        "w-12 h-12 rounded-full bg-green-500 shadow-lg flex items-center justify-center transition-all",
         isDisabled 
           ? "opacity-50 cursor-not-allowed" 
           : "hover:bg-green-600 active:scale-95",
@@ -44,17 +44,19 @@ export function NavigationButton({
       )}
       data-testid="button-navigation"
     >
-      {/* Diamond/Compass Arrow Icon */}
+      {/* Diamond/Navigation Arrow - Glovo style */}
       <svg 
-        width="24" 
-        height="24" 
+        width="22" 
+        height="22" 
         viewBox="0 0 24 24" 
-        fill="none" 
+        fill="none"
         className="text-white"
       >
         <path 
-          d="M12 2L19 12L12 22L5 12L12 2Z" 
+          d="M12 3L20 12L12 21L4 12L12 3Z" 
           fill="currentColor"
+          stroke="currentColor"
+          strokeWidth="1"
         />
       </svg>
     </button>
