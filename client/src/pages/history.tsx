@@ -466,7 +466,7 @@ export default function History() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="card">Онлайн</SelectItem>
+                  <SelectItem value="card">Сплачено онлайн</SelectItem>
                   <SelectItem value="cash">Готівка</SelectItem>
                 </SelectContent>
               </Select>
