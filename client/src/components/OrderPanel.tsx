@@ -40,7 +40,7 @@ export function OrderPanel({
       case "collapsed":
         return "h-28";
       case "expanded":
-        return "h-[calc(100dvh-5rem)]";
+        return "h-[calc(95dvh-5rem)]";
       default:
         return "h-[60dvh]";
     }
