@@ -182,7 +182,7 @@ export function OrderPanel({
         />
         <div 
           className={cn(
-            "relative w-full bg-white rounded-t-3xl overflow-hidden animate-in slide-in-from-bottom duration-300 transition-all flex flex-col",
+            "relative w-full bg-white rounded-t-3xl overflow-hidden animate-in slide-in-from-bottom duration-150 transition-all flex flex-col",
             popupExpanded ? "h-[95vh]" : "h-[70vh]"
           )}
         >
@@ -277,6 +277,11 @@ export function OrderPanel({
 
             <button
               onClick={() => {
+                // Close popup immediately for instant response
+                setSelectedOrderId(null);
+                setPopupExpanded(false);
+                
+                // Then trigger the action (async, won't block UI)
                 if (selectedOrder.status === "new") {
                   onStatusChange?.(selectedOrder.id, "accepted");
                 } else if (selectedOrder.status === "accepted") {
@@ -284,9 +289,8 @@ export function OrderPanel({
                 } else if (selectedOrder.status === "in_transit") {
                   onConfirmDelivery?.(selectedOrder.id);
                 }
-                setSelectedOrderId(null);
               }}
-              className="w-full py-4 rounded-full text-base font-semibold text-white bg-black"
+              className="w-full py-4 rounded-full text-base font-semibold text-white bg-black active:bg-gray-800"
               data-testid="button-confirm-order"
             >
               {selectedOrder.status === "new" 
@@ -642,7 +646,7 @@ export function OrderPanel({
     <>
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300 ease-out flex flex-col",
+          "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-150 ease-out flex flex-col",
           getPanelHeight()
         )}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
