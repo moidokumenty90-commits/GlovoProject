@@ -7,51 +7,67 @@ export interface UserCredentials {
   };
 }
 
-export const USERS: UserCredentials[] = [
-  {
-    username: "courier",
-    password: "glovo123",
-    courierInfo: {
-      name: "Курьер",
-      id: "courier-1",
+export function getUsers(): UserCredentials[] {
+  const users: UserCredentials[] = [
+    {
+      username: "courier",
+      password: "glovo123",
+      courierInfo: {
+        name: "Курьер",
+        id: "courier-1",
+      },
     },
-  },
-  {
-    username: "user1",
-    password: "pass1234",
-    courierInfo: {
-      name: "Алексей",
-      id: "courier-2",
-    },
-  },
-  {
-    username: "user2",
-    password: "pass5678",
-    courierInfo: {
-      name: "Марина",
-      id: "courier-3",
-    },
-  },
-  {
-    username: "user3",
-    password: "pass9012",
-    courierInfo: {
-      name: "Дмитрий",
-      id: "courier-4",
-    },
-  },
-  {
-    username: "user4",
-    password: "pass3456",
-    courierInfo: {
-      name: "Ольга",
-      id: "courier-5",
-    },
-  },
-];
+  ];
+
+  if (process.env.USER1_USERNAME && process.env.USER1_PASSWORD) {
+    users.push({
+      username: process.env.USER1_USERNAME,
+      password: process.env.USER1_PASSWORD,
+      courierInfo: {
+        name: "Курьер 1",
+        id: "courier-2",
+      },
+    });
+  }
+
+  if (process.env.USER2_USERNAME && process.env.USER2_PASSWORD) {
+    users.push({
+      username: process.env.USER2_USERNAME,
+      password: process.env.USER2_PASSWORD,
+      courierInfo: {
+        name: "Курьер 2",
+        id: "courier-3",
+      },
+    });
+  }
+
+  if (process.env.USER3_USERNAME && process.env.USER3_PASSWORD) {
+    users.push({
+      username: process.env.USER3_USERNAME,
+      password: process.env.USER3_PASSWORD,
+      courierInfo: {
+        name: "Курьер 3",
+        id: "courier-4",
+      },
+    });
+  }
+
+  if (process.env.USER4_USERNAME && process.env.USER4_PASSWORD) {
+    users.push({
+      username: process.env.USER4_USERNAME,
+      password: process.env.USER4_PASSWORD,
+      courierInfo: {
+        name: "Курьер 4",
+        id: "courier-5",
+      },
+    });
+  }
+
+  return users;
+}
 
 export function findUser(username: string): UserCredentials | undefined {
-  return USERS.find((u) => u.username === username);
+  return getUsers().find((u) => u.username === username);
 }
 
 export function validateCredentials(username: string, password: string): UserCredentials | null {
