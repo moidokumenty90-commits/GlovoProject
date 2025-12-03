@@ -9,7 +9,6 @@ import { NavigationButton } from "@/components/NavigationButton";
 import { DeliveryConfirmDialog } from "@/components/ConfirmDialog";
 import { MarkerDialog, DeleteMarkerDialog } from "@/components/MarkerDialog";
 import { ChatPanel } from "@/components/ChatPanel";
-import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ import { Check, X } from "lucide-react";
 import type { Courier, Order, Marker } from "@shared/schema";
 
 export default function Home() {
-  const { toast } = useToast();
   const mapRef = useRef<MapViewRef>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [orderPanelState, setOrderPanelState] = useState<"collapsed" | "default" | "expanded">("default");
@@ -77,13 +75,6 @@ export default function Home() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/courier"] });
     },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось изменить статус",
-        variant: "destructive",
-      });
-    },
   });
 
   // Update location mutation
@@ -102,10 +93,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
-      toast({
-        title: "Заказ получен",
-        description: "Теперь доставьте заказ клиенту",
-      });
     },
   });
 
@@ -129,10 +116,6 @@ export default function Home() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
       setConfirmDeliveryOpen(false);
-      toast({
-        title: "Доставлено!",
-        description: "Заказ успешно доставлен",
-      });
     },
   });
 
@@ -154,17 +137,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
-      toast({
-        title: "Заказ удалён",
-        description: "Заказ успешно удалён",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось удалить заказ",
-        variant: "destructive",
-      });
     },
   });
 
@@ -185,13 +157,6 @@ export default function Home() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders/active"] });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось обновить локацию",
-        variant: "destructive",
-      });
     },
   });
 
