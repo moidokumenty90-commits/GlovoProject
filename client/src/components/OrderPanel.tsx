@@ -483,6 +483,16 @@ export function OrderPanel({
             </div>
           </div>
 
+          {/* Divider line with shadow after customer info */}
+          <div 
+            className="w-full mb-4"
+            style={{ 
+              height: "1px",
+              backgroundColor: "#9CA3AF",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.30)"
+            }}
+          />
+
           {order.buildingInfo && (
             <p className="px-4 text-gray-500 text-sm mb-3">
               Здание: {order.buildingInfo}
@@ -549,7 +559,7 @@ export function OrderPanel({
             className="w-full px-4 py-4 flex items-center justify-between"
             data-testid="button-client-unavailable"
           >
-            <span className="text-gray-900 font-medium">Клиент недоступен</span>
+            <span className="font-bold" style={{ color: "#000000" }}>Клиент недоступен</span>
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
         </div>
