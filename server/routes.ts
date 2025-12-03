@@ -366,6 +366,28 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  app.patch("/api/markers/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { lat, lng } = req.body;
+      
+      if (typeof lat !== 'number' || typeof lng !== 'number') {
+        return res.status(400).json({ message: "Invalid coordinates" });
+      }
+
+      const marker = await storage.updateMarkerPosition(id, lat, lng);
+      
+      if (!marker) {
+        return res.status(404).json({ message: "Marker not found" });
+      }
+
+      res.json(marker);
+    } catch (error) {
+      console.error("Error updating marker:", error);
+      res.status(500).json({ message: "Failed to update marker" });
+    }
+  });
+
   app.delete("/api/markers/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;

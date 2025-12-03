@@ -28,6 +28,10 @@ export default function Home() {
   const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [showMarkerDialog, setShowMarkerDialog] = useState(false);
   
+  // Edit markers mode
+  const [editMarkersMode, setEditMarkersMode] = useState(false);
+  const [pendingMarkerChanges, setPendingMarkerChanges] = useState<Map<string, { lat: number; lng: number }>>(new Map());
+  
   // Delete marker dialogs
   const [deleteRestaurantOpen, setDeleteRestaurantOpen] = useState(false);
   const [deleteCustomerOpen, setDeleteCustomerOpen] = useState(false);
@@ -150,6 +154,41 @@ export default function Home() {
     },
   });
 
+  // Update marker position mutation
+  const updateMarkerPositionMutation = useMutation({
+    mutationFn: async ({ id, lat, lng }: { id: string; lat: number; lng: number }) => {
+      return await apiRequest("PATCH", `/api/markers/${id}`, { lat, lng });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/markers"] });
+    },
+  });
+
+  // Handle marker position change during edit mode
+  const handleMarkerPositionChange = useCallback((markerId: string, lat: number, lng: number) => {
+    setPendingMarkerChanges(prev => {
+      const newMap = new Map(prev);
+      newMap.set(markerId, { lat, lng });
+      return newMap;
+    });
+  }, []);
+
+  // Confirm edit markers - save all changes
+  const confirmEditMarkers = async () => {
+    const promises = Array.from(pendingMarkerChanges.entries()).map(([id, pos]) =>
+      updateMarkerPositionMutation.mutateAsync({ id, lat: pos.lat, lng: pos.lng })
+    );
+    await Promise.all(promises);
+    setPendingMarkerChanges(new Map());
+    setEditMarkersMode(false);
+  };
+
+  // Cancel edit markers - discard changes
+  const cancelEditMarkers = () => {
+    setPendingMarkerChanges(new Map());
+    setEditMarkersMode(false);
+  };
+
   // Update order location mutation
   const updateOrderLocationMutation = useMutation({
     mutationFn: async ({ orderId, type, lat, lng }: { orderId: string; type: "restaurant" | "customer"; lat: number; lng: number }) => {
@@ -254,11 +293,39 @@ export default function Home() {
             onPositionChange: (lat, lng) => setMarkerPosition({ lat, lng }),
           } : null}
           onOrderLocationChange={handleOrderLocationChange}
+          editMarkersMode={editMarkersMode}
+          onMarkerPositionChange={handleMarkerPositionChange}
         />
       </div>
 
+      {/* Edit Markers Mode Controls */}
+      {editMarkersMode && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-white rounded-xl shadow-lg px-4 py-3 flex items-center gap-3">
+          <span className="text-sm font-medium">
+            Перетащите метки для изменения позиции
+          </span>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={cancelEditMarkers}
+              data-testid="button-cancel-edit-markers"
+            >
+              Отмена
+            </Button>
+            <Button
+              size="sm"
+              onClick={confirmEditMarkers}
+              data-testid="button-confirm-edit-markers"
+            >
+              Готово
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Marker Adding Controls */}
-      {addingMarkerType && (
+      {addingMarkerType && !editMarkersMode && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-white rounded-xl shadow-lg px-4 py-3 flex items-center gap-3">
           <span className="text-sm font-medium">
             {addingMarkerType === "restaurant" ? "Перетащите метку заведения" : "Перетащите метку клиента"}
@@ -364,6 +431,7 @@ export default function Home() {
           onRemoveRestaurantMarker={() => setDeleteRestaurantOpen(true)}
           onAddCustomerMarker={() => startAddingMarker("customer")}
           onRemoveCustomerMarker={() => setDeleteCustomerOpen(true)}
+          onEditMarkers={() => setEditMarkersMode(true)}
         />
       </div>
 

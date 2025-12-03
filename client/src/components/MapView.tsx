@@ -12,6 +12,8 @@ interface MapViewProps {
     onPositionChange: (lat: number, lng: number) => void;
   } | null;
   onOrderLocationChange?: (type: "restaurant" | "customer", lat: number, lng: number) => void;
+  editMarkersMode?: boolean;
+  onMarkerPositionChange?: (markerId: string, lat: number, lng: number) => void;
 }
 
 export interface MapViewRef {
@@ -25,6 +27,8 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
   markers,
   draggableMarker,
   onOrderLocationChange,
+  editMarkersMode,
+  onMarkerPositionChange,
 }, ref) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -334,24 +338,12 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
       })
         .bindPopup(`<b>${order.restaurantName}</b><br>${order.restaurantAddress}`)
         .addTo(map);
-      
-      restaurantMarkerRef.current.on("dblclick", () => {
-        if (restaurantMarkerRef.current && onOrderLocationChange) {
-          makeMarkerDraggable(restaurantMarkerRef.current, "restaurant");
-        }
-      });
 
       customerMarkerRef.current = L.marker([order.customerLat, order.customerLng], {
         icon: createCustomerIcon(),
       })
         .bindPopup(`<b>${order.customerName}</b><br>${order.customerAddress}`)
         .addTo(map);
-      
-      customerMarkerRef.current.on("dblclick", () => {
-        if (customerMarkerRef.current && onOrderLocationChange) {
-          makeMarkerDraggable(customerMarkerRef.current, "customer");
-        }
-      });
 
       // Fit bounds to show all markers
       const points: L.LatLngExpression[] = [
@@ -375,12 +367,23 @@ export const MapView = forwardRef<MapViewRef, MapViewProps>(({
 
     markers.forEach((marker) => {
       const icon = marker.type === "restaurant" ? createSavedRestaurantIcon() : createSavedCustomerIcon();
-      const leafletMarker = L.marker([marker.lat, marker.lng], { icon })
+      const leafletMarker = L.marker([marker.lat, marker.lng], { 
+        icon,
+        draggable: editMarkersMode || false,
+      })
         .bindPopup(`<b>${marker.name}</b><br>${marker.address || ""}`)
         .addTo(map);
+      
+      if (editMarkersMode && onMarkerPositionChange) {
+        leafletMarker.on("dragend", () => {
+          const pos = leafletMarker.getLatLng();
+          onMarkerPositionChange(marker.id, pos.lat, pos.lng);
+        });
+      }
+      
       savedMarkersRef.current.push(leafletMarker);
     });
-  }, [markers]);
+  }, [markers, editMarkersMode, onMarkerPositionChange]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;

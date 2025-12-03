@@ -46,6 +46,7 @@ export interface IStorage {
   getMarkers(courierId: string): Promise<Marker[]>;
   getMarkersByType(courierId: string, type: string): Promise<Marker[]>;
   createMarker(marker: InsertMarker): Promise<Marker>;
+  updateMarkerPosition(id: string, lat: number, lng: number): Promise<Marker | undefined>;
   deleteMarker(id: string): Promise<boolean>;
   
   // Session management (single-device enforcement)
@@ -327,6 +328,15 @@ export class DatabaseStorage implements IStorage {
       .values(marker)
       .returning();
     return newMarker;
+  }
+
+  async updateMarkerPosition(id: string, lat: number, lng: number): Promise<Marker | undefined> {
+    const [updatedMarker] = await db
+      .update(markers)
+      .set({ lat, lng })
+      .where(eq(markers.id, id))
+      .returning();
+    return updatedMarker;
   }
 
   async deleteMarker(id: string): Promise<boolean> {
