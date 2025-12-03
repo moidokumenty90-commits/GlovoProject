@@ -27,19 +27,33 @@ export function TopBar({
       {/* Status Badge - Center (Glovo style) */}
       <button
         onClick={onToggleStatus}
-        className={`flex flex-col items-center px-5 py-2 rounded-full shadow-md ${
+        className={`flex flex-col items-center px-5 py-2 rounded-full shadow-sm ${
           isOnline
-            ? "bg-green-500"
-            : "bg-gray-200"
+            ? "bg-white border border-gray-200"
+            : "bg-white border-2 border-teal-400"
         }`}
         data-testid="button-toggle-status"
       >
-        <span className={`text-[10px] font-medium ${isOnline ? "text-white/80" : "text-gray-500"}`}>
-          Статус
-        </span>
-        <span className={`font-semibold text-sm ${isOnline ? "text-white" : "text-gray-600"}`}>
-          {isOnline ? "Онлайн" : "Офлайн"}
-        </span>
+        {isOnline ? (
+          <>
+            <span className="text-[10px] text-gray-400 font-medium">
+              Статус
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />
+              <span className="font-semibold text-sm text-gray-800">
+                Онлайн
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium text-sm text-gray-500">
+              Оффлайн
+            </span>
+            <div className="w-2 h-2 bg-gray-300 rounded-full" />
+          </div>
+        )}
       </button>
 
       {/* Support Button - Right */}
