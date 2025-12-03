@@ -535,7 +535,7 @@ export function OrderPanel({
             </div>
 
             {showItems && items.length > 0 && (
-              <div className="space-y-2 mb-4 pl-4">
+              <div className="space-y-2 mb-4 pl-8">
                 {items.map((item, index) => (
                   <div key={index} className="flex justify-between items-start text-sm">
                     <div className="flex gap-2">
