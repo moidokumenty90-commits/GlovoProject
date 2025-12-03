@@ -28,6 +28,7 @@ export function OrderPanel({
   const [showItems, setShowItems] = useState(false);
   const touchStartY = useRef<number>(0);
   const touchEndY = useRef<number>(0);
+  const isDragging = useRef<boolean>(false);
 
   if (!order) {
     return null;
@@ -39,43 +40,49 @@ export function OrderPanel({
   const getPanelHeight = () => {
     switch (panelState) {
       case "collapsed":
-        return "h-20";
+        return "h-16";
       case "expanded":
-        return "h-[92vh]";
+        return "h-[100dvh]";
       default:
-        return "h-[50vh]";
+        return "h-[50dvh]";
     }
   };
 
-  const handleTouchStart = (e: TouchEvent) => {
+  const handleDragStart = (e: TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
     touchEndY.current = e.touches[0].clientY;
+    isDragging.current = true;
   };
 
-  const handleTouchEnd = () => {
+  const handleDragMove = (e: TouchEvent) => {
+    if (isDragging.current) {
+      touchEndY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging.current) return;
+    
     const swipeDistance = touchStartY.current - touchEndY.current;
-    const minSwipeDistance = 50;
+    const minSwipeDistance = 40;
 
-    if (Math.abs(swipeDistance) < minSwipeDistance) return;
-
-    if (swipeDistance > 0) {
-      // Swipe up - expand
-      if (panelState === "collapsed") {
-        onPanelStateChange?.("default");
-      } else if (panelState === "default") {
-        onPanelStateChange?.("expanded");
-      }
-    } else {
-      // Swipe down - collapse
-      if (panelState === "expanded") {
-        onPanelStateChange?.("default");
-      } else if (panelState === "default") {
-        onPanelStateChange?.("collapsed");
+    if (Math.abs(swipeDistance) >= minSwipeDistance) {
+      if (swipeDistance > 0) {
+        if (panelState === "collapsed") {
+          onPanelStateChange?.("default");
+        } else if (panelState === "default") {
+          onPanelStateChange?.("expanded");
+        }
+      } else {
+        if (panelState === "expanded") {
+          onPanelStateChange?.("default");
+        } else if (panelState === "default") {
+          onPanelStateChange?.("collapsed");
+        }
       }
     }
+    
+    isDragging.current = false;
   };
 
   const handleToggle = () => {
@@ -151,24 +158,31 @@ export function OrderPanel({
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300 flex flex-col touch-pan-y",
+        "fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-30 transition-all duration-300 ease-out flex flex-col",
         getPanelHeight()
       )}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       data-testid="order-panel"
     >
-      <button
+      {/* Drag Handle - always captures swipe */}
+      <div
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={handleDragEnd}
         onClick={handleToggle}
-        className="w-full py-3 flex items-center justify-center cursor-pointer flex-shrink-0"
+        className="w-full py-4 flex items-center justify-center cursor-pointer flex-shrink-0 touch-none"
         data-testid="button-toggle-panel"
       >
-        <div className="w-10 h-1 bg-gray-300 rounded-full" />
-      </button>
+        <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+      </div>
 
       {panelState === "collapsed" ? (
-        <div className="px-5 flex items-center justify-between flex-shrink-0">
+        <div 
+          className="px-5 flex items-center justify-between flex-shrink-0"
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+        >
           <div>
             <span className="text-lg font-bold text-gray-900">#{order.orderNumber}</span>
             <span className="text-gray-500 ml-2">· {order.customerName}</span>
@@ -178,7 +192,7 @@ export function OrderPanel({
       ) : (
         <>
           <div 
-            className="overflow-y-auto px-5 flex-1"
+            className="overflow-y-auto px-5 flex-1 overscroll-contain"
           >
             <div className="flex items-start justify-between mb-2">
               <h2 className="text-xl font-bold text-gray-900" data-testid="text-customer-name">
@@ -295,11 +309,10 @@ export function OrderPanel({
                 )}
               </>
             )}
-
           </div>
 
-          {/* Fixed button at bottom for both default and expanded states */}
-          <div className="flex-shrink-0 px-5 pb-6 pt-2 bg-white border-t border-gray-100 safe-bottom">
+          {/* Fixed button at bottom */}
+          <div className="flex-shrink-0 px-5 pb-4 pt-3 bg-white border-t border-gray-100">
             {renderActionButton()}
           </div>
         </>

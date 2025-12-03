@@ -14,11 +14,14 @@ export function TopBar({
   onSupportClick,
 }: TopBarProps) {
   return (
-    <div className="absolute left-0 right-0 z-20 flex items-center justify-between px-4 safe-top" style={{ top: 'max(1rem, env(safe-area-inset-top))' }}>
+    <div 
+      className="absolute left-0 right-0 z-20 flex items-center justify-between px-4"
+      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
+    >
       {/* Menu Button - Left */}
       <button
         onClick={onMenuClick}
-        className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center"
+        className="w-12 h-12 rounded-full bg-white/95 backdrop-blur-sm shadow-md flex items-center justify-center"
         data-testid="button-burger-menu"
       >
         <Menu className="w-6 h-6 text-gray-700" />
@@ -27,10 +30,10 @@ export function TopBar({
       {/* Status Badge - Center (Glovo style) */}
       <button
         onClick={onToggleStatus}
-        className={`relative flex flex-col items-center px-5 py-2 rounded-full shadow-sm ${
+        className={`relative flex flex-col items-center px-5 py-2 rounded-full shadow-sm backdrop-blur-sm ${
           isOnline
-            ? "bg-white border border-gray-200"
-            : "bg-white border-2 border-teal-400"
+            ? "bg-white/95 border border-gray-200"
+            : "bg-white/95 border-2 border-teal-400"
         }`}
         data-testid="button-toggle-status"
       >
@@ -59,7 +62,7 @@ export function TopBar({
       {/* Support Button - Right */}
       <button
         onClick={onSupportClick}
-        className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center"
+        className="w-12 h-12 rounded-full bg-white/95 backdrop-blur-sm shadow-md flex items-center justify-center"
         data-testid="button-support"
       >
         <Headphones className="w-6 h-6 text-gray-700" />
