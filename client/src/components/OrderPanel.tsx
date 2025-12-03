@@ -206,36 +206,38 @@ export function OrderPanel({
           </button>
 
           <div className="p-6 pt-2 overflow-y-auto flex-1">
-            <div className="mb-3">
-              <span
-                className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-2"
-                style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
-              >
-                {getOrderStatusLabel(selectedOrder.status)}
-              </span>
+            {/* Position 1: Status badge */}
+            <span
+              className="inline-block px-4 py-1.5 rounded-full text-sm font-medium mb-4"
+              style={{ backgroundColor: "#E8F5E9", color: "#00A082" }}
+            >
+              {getOrderStatusLabel(selectedOrder.status)}
+            </span>
 
-              <div 
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2"
-                style={{ borderColor: "#00A082" }}
-              >
-                <span className="text-2xl font-bold" style={{ color: "#00A082" }}>
-                  #{getShortOrderNum(selectedOrder)}
-                </span>
-                <ExternalLink className="w-4 h-4" style={{ color: "#00A082" }} />
-              </div>
+            {/* Position 2: Order number */}
+            <div 
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border-2 mb-4"
+              style={{ borderColor: "#00A082" }}
+            >
+              <span className="text-3xl font-bold" style={{ color: "#00A082" }}>
+                #{getShortOrderNum(selectedOrder)}
+              </span>
+              <ExternalLink className="w-5 h-5" style={{ color: "#00A082" }} />
             </div>
 
-            <p className="text-gray-500 text-sm mb-4">
+            {/* Position 3: Order info */}
+            <p className="text-gray-600 text-base mb-6">
               {selectedOrder.orderNumber} - #{getShortOrderNum(selectedOrder)} - {selectedOrder.customerName}
             </p>
 
-            <div className="flex justify-end mb-4">
+            {/* Position 4: Products count - right aligned */}
+            <div className="flex justify-end mb-6">
               <button
                 onClick={() => setShowItems(!showItems)}
                 className="flex items-center gap-1"
                 data-testid="button-toggle-items-popup"
               >
-                <span className="font-medium" style={{ color: "#00A082" }}>
+                <span className="font-semibold text-lg" style={{ color: "#00A082" }}>
                   {totalItems} прод.
                 </span>
                 <ChevronDown 
