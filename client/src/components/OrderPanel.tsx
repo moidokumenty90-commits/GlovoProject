@@ -383,9 +383,12 @@ export function OrderPanel({
                     >
                       {index + 1}
                     </span>
-                    {index < orders.length - 1 && (
-                      <div className="w-0.5 h-20 mt-1" style={{ backgroundColor: "#000000" }} />
-                    )}
+                    <div 
+                      className="w-0.5 h-20 mt-1" 
+                      style={{ 
+                        backgroundImage: "repeating-linear-gradient(to bottom, #000000 0px, #000000 4px, transparent 4px, transparent 8px)"
+                      }} 
+                    />
                   </div>
 
                   <div className="flex-1">
