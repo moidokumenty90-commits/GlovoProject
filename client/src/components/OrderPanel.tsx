@@ -51,7 +51,7 @@ export function OrderPanel({
       case "expanded":
         return "h-[calc(95dvh-5rem)]";
       default:
-        return "h-[60dvh]";
+        return "h-[70dvh]";
     }
   };
 
@@ -183,7 +183,7 @@ export function OrderPanel({
         <div 
           className={cn(
             "relative w-full bg-white rounded-t-3xl overflow-hidden animate-in slide-in-from-bottom duration-300 transition-all flex flex-col",
-            popupExpanded ? "h-[95vh]" : "h-[80vh]"
+            popupExpanded ? "h-[95vh]" : "h-[70vh]"
           )}
         >
           <div
