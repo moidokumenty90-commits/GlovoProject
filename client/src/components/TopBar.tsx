@@ -35,7 +35,7 @@ export function TopBar({
         data-testid="button-toggle-status"
       >
         {isOnline && (
-          <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
         )}
         {isOnline ? (
           <>
