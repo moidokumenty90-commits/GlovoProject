@@ -380,7 +380,7 @@ export function OrderPanel({
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 mb-1"
                         style={{ borderColor: "#00A082" }}
                       >
-                        <span className="text-lg font-bold" style={{ color: "#00A082" }}>
+                        <span className="text-lg font-bold" style={{ color: "#000000" }}>
                           #{getShortOrderNum(order)}
                         </span>
                         <ExternalLink className="w-3.5 h-3.5" style={{ color: "#00A082" }} />
